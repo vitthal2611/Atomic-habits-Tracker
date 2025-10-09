@@ -1,27 +1,8 @@
 import React, { useState } from 'react';
+import './modern-components.css';
 
 const HabitCard = ({ habit, stats, onToggle, onDelete }) => {
   const [showDetails, setShowDetails] = useState(false);
-  
-  const getDaysBuilding = () => {
-    const start = new Date(habit.startDate);
-    const now = new Date();
-    return Math.ceil((now - start) / (1000 * 60 * 60 * 24));
-  };
-  
-  const getPeriodBuilding = () => {
-    const start = new Date(habit.startDate);
-    const now = new Date();
-    
-    if (habit.frequency === 'weekly') {
-      return Math.ceil((now - start) / (1000 * 60 * 60 * 24 * 7));
-    } else if (habit.frequency === 'monthly') {
-      return (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()) + 1;
-    } else if (habit.frequency === 'yearly') {
-      return now.getFullYear() - start.getFullYear() + 1;
-    }
-    return getDaysBuilding();
-  };
   
   const getPeriodLabel = () => {
     if (habit.frequency === 'weekly') return 'weeks';
@@ -30,80 +11,107 @@ const HabitCard = ({ habit, stats, onToggle, onDelete }) => {
     return 'days';
   };
 
+  const getStreakMessage = () => {
+    if (stats.streak >= 21) return { icon: '🏆', message: 'Identity Master!', color: '#f59e0b' };
+    if (stats.streak >= 7) return { icon: '🔥', message: 'Strong Identity!', color: '#ef4444' };
+    if (stats.streak >= 3) return { icon: '⭐', message: 'Building Momentum!', color: '#8b5cf6' };
+    if (stats.streak >= 1) return { icon: '🌱', message: 'Great Start!', color: '#10b981' };
+    return { icon: '✨', message: 'Ready to Begin!', color: '#6b7280' };
+  };
+
+  const streakInfo = getStreakMessage();
+
   return (
-    <div className={`habit-card ${stats.isCompletedToday ? 'completed' : ''} ${habit.frequency !== 'daily' ? habit.frequency : ''}`}>
-      <div className="habit-header">
-        <div className="habit-icon" role="img" aria-label={habit.name}>
-          {habit.icon}
+    <div className={`modern-habit-card ${stats.isCompletedToday ? 'completed' : ''} ${habit.frequency !== 'daily' ? habit.frequency : ''}`}>
+      <div className="card-glow"></div>
+      
+      <div className="card-header">
+        <div className="habit-icon-container">
+          <div className="habit-icon" role="img" aria-label={habit.name}>
+            {habit.icon || '⭐'}
+          </div>
+          <div className="streak-indicator" style={{ '--streak-color': streakInfo.color }}>
+            <span className="streak-icon">{streakInfo.icon}</span>
+            <span className="streak-count">{stats.streak}</span>
+          </div>
         </div>
-        <div className="habit-actions">
+        
+        <div className="card-actions">
           <button 
-            className="delete-btn" 
+            className="delete-button" 
             onClick={onDelete}
             aria-label={`Delete ${habit.name} habit`}
             title="Delete habit"
           >
-            ×
-          </button>
-          <button 
-            className={`big-toggle-btn ${stats.isCompletedToday ? 'completed' : ''}`}
-            onClick={onToggle}
-            aria-label={`${stats.isCompletedToday ? 'Mark as incomplete' : 'Mark as complete'}: ${habit.name}`}
-          >
-            {stats.isCompletedToday ? '✓ DONE' : 'DO IT'}
+            <span className="delete-icon">🗑️</span>
           </button>
         </div>
       </div>
       
-      <div className="habit-body">
-        <h4 className="habit-name">{habit.name}</h4>
+      <div className="card-content">
+        <h3 className="habit-title">{habit.name}</h3>
+        <p className="habit-identity">I am {habit.identity}</p>
         
-        <div className="four-laws">
-          <div className="law obvious" title="Implementation Intention">
-            👁️ {habit.cue}
-          </div>
-          <div className="law attractive" title="Temptation Bundling">
-            🎁 {habit.reward || 'Track completion'}
-          </div>
-          <div className="law easy" title="2-Minute Rule">
-            ⏱️ {habit.twoMinuteVersion}
-          </div>
-          <div className="law satisfying" title="Habit Tracking">
-            🔥 {stats.streak} {getPeriodLabel().slice(0, -1)} streak
-            {stats.streak === 0 && (
-              <div className="plateau-msg">Every expert was once a beginner</div>
-            )}
-          </div>
+        <div className="habit-cue">
+          <span className="cue-icon">🔗</span>
+          <span className="cue-text">{habit.cue}</span>
         </div>
         
-        <div className="identity-statement">🎯 {habit.identity}</div>
-        
-        <div className="building">
-          <div className="progress-momentum">
-            <span className="building-text">
-              📅 Starting from {new Date(habit.startDate).toLocaleDateString()} (streak: {stats.streak})
-            </span>
-            <div className="momentum-msg">
-              {habit.frequency !== 'daily' ? `${habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} Progress > Daily Perfection` : 'Consistency > Perfection'}
-            </div>
-          </div>
+        <div className="two-minute-rule">
+          <span className="rule-icon">⚡</span>
+          <span className="rule-text">{habit.twoMinuteVersion}</span>
         </div>
         
-        {showDetails && (
-          <div className="habit-details">
-            <p><strong>Started:</strong> {new Date(habit.startDate).toLocaleDateString()}</p>
-            <p><strong>Total completions:</strong> {habit.daily.filter(d => d.completed).length}</p>
-          </div>
-        )}
+        <div className="streak-message" style={{ '--message-color': streakInfo.color }}>
+          <span className="message-icon">{streakInfo.icon}</span>
+          <span className="message-text">{streakInfo.message}</span>
+        </div>
         
+        <div className="habit-meta">
+          <span className="start-date">
+            📅 Since {new Date(habit.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+          <span className="frequency-badge">{habit.frequency}</span>
+        </div>
+      </div>
+      
+      <div className="card-footer">
         <button 
-          className="details-toggle"
-          onClick={() => setShowDetails(!showDetails)}
-          aria-expanded={showDetails}
+          className={`vote-action-btn ${stats.isCompletedToday ? 'voted' : ''}`}
+          onClick={onToggle}
+          aria-label={`${stats.isCompletedToday ? 'Remove vote for' : 'Cast vote for'}: ${habit.name}`}
         >
-          {showDetails ? 'Hide Details' : 'Show Details'}
+          <span className="vote-icon">
+            {stats.isCompletedToday ? '✅' : '🗳️'}
+          </span>
+          <span className="vote-text">
+            {stats.isCompletedToday ? 'Vote Cast!' : 'Cast Vote'}
+          </span>
+          <div className="vote-ripple"></div>
         </button>
       </div>
+      
+      {showDetails && (
+        <div className="habit-details-modern">
+          <div className="detail-item">
+            <span className="detail-label">Started:</span>
+            <span className="detail-value">{new Date(habit.startDate).toLocaleDateString()}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Reward:</span>
+            <span className="detail-value">{habit.reward || 'Track completion'}</span>
+          </div>
+        </div>
+      )}
+      
+      <button 
+        className="details-toggle-modern"
+        onClick={() => setShowDetails(!showDetails)}
+        aria-expanded={showDetails}
+      >
+        <span className="toggle-icon">{showDetails ? '▲' : '▼'}</span>
+        <span className="toggle-text">{showDetails ? 'Less' : 'More'}</span>
+      </button>
     </div>
   );
 };

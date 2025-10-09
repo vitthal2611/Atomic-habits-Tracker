@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './modern-components.css';
 
 const TodayFocus = ({ habits, stats, getHabitStats, updateHabitCount, updateStartDate, currentDate }) => {
   const isToday = currentDate.toDateString() === new Date().toDateString();
@@ -6,85 +7,145 @@ const TodayFocus = ({ habits, stats, getHabitStats, updateHabitCount, updateStar
   
   const isCurrentPeriod = (habit) => {
     const startDate = new Date(habit.startDate);
-    
-    // Only show habits that have started by the current viewing date
-    if (currentDate < startDate) return false;
-    
-    return true;
+    return currentDate >= startDate;
   };
   
   const categorizeHabits = () => {
     const categories = {
-      'Financial': [],
-      'Health & Wellness': [],
-      'Fitness & Movement': [],
-      'Learning & Growth': [],
-      'Productivity': [],
-      'Social & Emotional': []
+      '💰 Financial': { habits: [], color: '#f59e0b', icon: '💰' },
+      '🌱 Health & Wellness': { habits: [], color: '#10b981', icon: '🌱' },
+      '💪 Fitness & Movement': { habits: [], color: '#ef4444', icon: '💪' },
+      '📚 Learning & Growth': { habits: [], color: '#8b5cf6', icon: '📚' },
+      '⚡ Productivity': { habits: [], color: '#3b82f6', icon: '⚡' },
+      '🥰 Social & Emotional': { habits: [], color: '#ec4899', icon: '🥰' }
     };
     
     habits.filter(isCurrentPeriod).forEach(habit => {
       const name = habit.name.toLowerCase();
       if (name.includes('save') || name.includes('money') || name.includes('income') || name.includes('invest')) {
-        categories['Financial'].push(habit);
+        categories['💰 Financial'].habits.push(habit);
       } else if (name.includes('water') || name.includes('tea') || name.includes('vitamin') || name.includes('fruit') || name.includes('floss') || name.includes('breath')) {
-        categories['Health & Wellness'].push(habit);
+        categories['🌱 Health & Wellness'].habits.push(habit);
       } else if (name.includes('push') || name.includes('squat') || name.includes('plank') || name.includes('walk') || name.includes('stretch') || name.includes('stand')) {
-        categories['Fitness & Movement'].push(habit);
+        categories['💪 Fitness & Movement'].habits.push(habit);
       } else if (name.includes('read') || name.includes('learn') || name.includes('podcast') || name.includes('piano') || name.includes('word')) {
-        categories['Learning & Growth'].push(habit);
+        categories['📚 Learning & Growth'].habits.push(habit);
       } else if (name.includes('bed') || name.includes('organize') || name.includes('wash') || name.includes('priorities') || name.includes('phone') || name.includes('goal')) {
-        categories['Productivity'].push(habit);
+        categories['⚡ Productivity'].habits.push(habit);
       } else {
-        categories['Social & Emotional'].push(habit);
+        categories['🥰 Social & Emotional'].habits.push(habit);
       }
     });
     
-    return Object.entries(categories).filter(([_, habits]) => habits.length > 0);
+    return Object.entries(categories).filter(([_, categoryData]) => categoryData.habits.length > 0);
   };
   
   const categorizedHabits = categorizeHabits();
+  const completionRate = stats.totalHabits > 0 ? Math.round((stats.completedToday / stats.totalHabits) * 100) : 0;
   
   return (
-    <div className="today-focus">
-      <div className="today-header">
-        <h2>{dateTitle} Identity Votes</h2>
-        <div className={`today-score ${stats.completedToday === stats.totalHabits && stats.totalHabits > 0 ? 'perfect' : ''}`}>
-          <span className="sr-only">Completed {stats.completedToday} out of {stats.totalHabits} habits</span>
-          {stats.completedToday}/{stats.totalHabits}
+    <div className="modern-focus-view">
+      <div className="focus-hero">
+        <div className="hero-content">
+          <h1 className="focus-title">{dateTitle} Identity Votes</h1>
+          <p className="focus-subtitle">Every action is a vote for who you're becoming</p>
+        </div>
+        
+        <div className="completion-ring">
+          <svg className="ring-svg" viewBox="0 0 120 120">
+            <circle 
+              cx="60" 
+              cy="60" 
+              r="50" 
+              fill="none" 
+              stroke="rgba(255,255,255,0.2)" 
+              strokeWidth="8"
+            />
+            <circle 
+              cx="60" 
+              cy="60" 
+              r="50" 
+              fill="none" 
+              stroke="#10b981" 
+              strokeWidth="8"
+              strokeDasharray={`${2 * Math.PI * 50}`}
+              strokeDashoffset={`${2 * Math.PI * 50 * (1 - completionRate / 100)}`}
+              className="completion-stroke"
+            />
+          </svg>
+          <div className="ring-content">
+            <span className="completion-percentage">{completionRate}%</span>
+            <span className="completion-label">{stats.completedToday}/{stats.totalHabits}</span>
+          </div>
         </div>
       </div>
       
-      <div className="categories-container">
-        {categorizedHabits.map(([category, categoryHabits]) => (
-          <div key={category} className="habit-category">
-            <h3 className="category-title">{category}</h3>
-            <div className="category-habits">
-              {categoryHabits.map(habit => {
-                const habitStats = getHabitStats(habit, currentDate);
-                return (
-                  <TodayHabitCard 
-                    key={habit.id}
-                    habit={habit}
-                    stats={habitStats}
-                    onVote={() => updateHabitCount(habit.id, habitStats.isCompletedToday ? -1 : 1, currentDate)}
-                    onUpdateStartDate={updateStartDate}
-                  />
-                );
-              })}
-            </div>
-          </div>
+      <div className="categories-modern">
+        {categorizedHabits.map(([categoryName, categoryData]) => (
+          <CategorySection 
+            key={categoryName}
+            name={categoryName}
+            habits={categoryData.habits}
+            color={categoryData.color}
+            getHabitStats={getHabitStats}
+            updateHabitCount={updateHabitCount}
+            updateStartDate={updateStartDate}
+            currentDate={currentDate}
+          />
         ))}
       </div>
       
-      <div className="today-quote">
-        "Every action is a vote for the type of person you wish to become." - James Clear
+      <div className="focus-inspiration">
+        <div className="inspiration-content">
+          <blockquote>
+            "You do not rise to the level of your goals. You fall to the level of your systems."
+          </blockquote>
+          <cite>- James Clear</cite>
+        </div>
       </div>
     </div>
   );
 };
 
-const TodayHabitCard = ({ habit, stats, onVote, onUpdateStartDate }) => {
+const CategorySection = ({ name, habits, color, getHabitStats, updateHabitCount, updateStartDate, currentDate }) => {
+  const completedCount = habits.filter(habit => getHabitStats(habit, currentDate).isCompletedToday).length;
+  const completionRate = habits.length > 0 ? (completedCount / habits.length) * 100 : 0;
+  
+  return (
+    <div className="category-section" style={{ '--category-color': color }}>
+      <div className="category-header">
+        <h3 className="category-name">{name}</h3>
+        <div className="category-progress">
+          <div className="progress-bar-mini">
+            <div 
+              className="progress-fill-mini" 
+              style={{ width: `${completionRate}%`, backgroundColor: color }}
+            ></div>
+          </div>
+          <span className="category-count">{completedCount}/{habits.length}</span>
+        </div>
+      </div>
+      
+      <div className="category-habits-modern">
+        {habits.map(habit => {
+          const habitStats = getHabitStats(habit, currentDate);
+          return (
+            <ModernHabitItem 
+              key={habit.id}
+              habit={habit}
+              stats={habitStats}
+              onVote={() => updateHabitCount(habit.id, habitStats.isCompletedToday ? -1 : 1, currentDate)}
+              onUpdateStartDate={updateStartDate}
+              categoryColor={color}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ModernHabitItem = ({ habit, stats, onVote, onUpdateStartDate, categoryColor }) => {
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [tempDate, setTempDate] = useState('');
   
@@ -100,82 +161,85 @@ const TodayHabitCard = ({ habit, stats, onVote, onUpdateStartDate }) => {
     }
     setIsEditingDate(false);
   };
-  const getDaysBuilding = () => {
-    const start = new Date(habit.startDate);
-    const now = new Date();
-    return Math.ceil((now - start) / (1000 * 60 * 60 * 24));
-  };
   
-  const getPeriodBuilding = () => {
-    const start = new Date(habit.startDate);
-    const now = new Date();
-    
-    if (habit.frequency === 'weekly') {
-      return Math.ceil((now - start) / (1000 * 60 * 60 * 24 * 7));
-    } else if (habit.frequency === 'monthly') {
-      return (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()) + 1;
-    } else if (habit.frequency === 'yearly') {
-      return now.getFullYear() - start.getFullYear() + 1;
-    }
-    return Math.ceil((now - start) / (1000 * 60 * 60 * 24));
+  const getStreakEmoji = () => {
+    if (stats.streak >= 21) return '🏆';
+    if (stats.streak >= 7) return '🔥';
+    if (stats.streak >= 3) return '⭐';
+    if (stats.streak >= 1) return '🌱';
+    return '✨';
   };
-  
-  const getPeriodLabel = () => {
-    if (habit.frequency === 'weekly') return 'weeks';
-    if (habit.frequency === 'monthly') return 'months';
-    if (habit.frequency === 'yearly') return 'years';
-    return 'days';
-  };
-  
-  const isNonDaily = habit.frequency !== 'daily';
 
   return (
-    <div className={`today-habit-card ${stats.isCompletedToday ? 'completed' : ''}`}>
-      <div className="habit-header">
-        <div className="habit-icon" role="img" aria-label={habit.name}>
-          {habit.icon}
+    <div className={`modern-habit-item ${stats.isCompletedToday ? 'completed' : ''}`} style={{ '--item-color': categoryColor }}>
+      <div className="habit-item-header">
+        <div className="habit-icon-wrapper">
+          <span className="habit-icon">{habit.icon || '⭐'}</span>
         </div>
-        <button 
-          className={`vote-btn ${stats.isCompletedToday ? 'voted' : ''}`}
-          onClick={onVote}
-          aria-label={`${stats.isCompletedToday ? 'Remove identity vote for' : 'Cast identity vote for'} ${habit.name}. Current streak: ${stats.streak} days`}
-          aria-pressed={stats.isCompletedToday}
-        >
-          {stats.isCompletedToday ? '✓ IDENTITY VOTE CAST' : '🗳️ CAST YOUR IDENTITY VOTE'}
-        </button>
+        
+        <div className="habit-info">
+          <h4 className="habit-name">{habit.name}</h4>
+          <p className="habit-identity">I am {habit.identity}</p>
+        </div>
+        
+        <div className="streak-badge">
+          <span className="streak-emoji">{getStreakEmoji()}</span>
+          <span className="streak-number">{stats.streak}</span>
+        </div>
       </div>
-      <div className="habit-body">
-        <h4 className="habit-name">🔗 After {habit.cue.replace('After ', '')}, I will {habit.name}</h4>
-        <div className="four-laws">
-          <div className="law obvious">👁️ <strong>Cue:</strong> {habit.cue}</div>
-          <div className="law attractive">🎁 <strong>Craving:</strong> {habit.reward || 'Feel accomplished'}</div>
-          <div className="law easy">⏱️ <strong>Response:</strong> {habit.twoMinuteVersion}</div>
-          <div className="law satisfying">
-            {stats.streak >= 7 ? '🏆' : stats.streak >= 3 ? '🔥' : '✨'} <strong>Reward:</strong> {stats.streak} day streak {stats.streak >= 21 ? '(Identity Master!)' : stats.streak >= 7 ? '(Strong Identity!)' : ''}
+      
+      <div className="habit-implementation">
+        <div className="implementation-item">
+          <span className="impl-icon">🔗</span>
+          <span className="impl-text">{habit.cue}</span>
+        </div>
+        <div className="implementation-item">
+          <span className="impl-icon">⚡</span>
+          <span className="impl-text">{habit.twoMinuteVersion}</span>
+        </div>
+      </div>
+      
+      <div className="habit-meta-info">
+        {isEditingDate ? (
+          <div className="date-edit-modern">
+            <input 
+              type="date" 
+              value={tempDate}
+              onChange={(e) => setTempDate(e.target.value)}
+              onBlur={handleDateSave}
+              onKeyDown={(e) => e.key === 'Enter' && handleDateSave()}
+              autoFocus
+              className="date-input-modern"
+            />
           </div>
-        </div>
-        <div className="identity-statement">🎯 {habit.identity}</div>
-        <div className="building">
-          {isEditingDate ? (
-            <div className="date-edit">
-              📅 Starting from 
-              <input 
-                type="date" 
-                value={tempDate}
-                onChange={(e) => setTempDate(e.target.value)}
-                onBlur={handleDateSave}
-                onKeyDown={(e) => e.key === 'Enter' && handleDateSave()}
-                autoFocus
-              />
-            </div>
-          ) : (
-            <div onClick={handleDateEdit} style={{cursor: 'pointer'}}>
-              📅 Starting from {new Date(habit.startDate).toLocaleDateString()}
-            </div>
-          )}
-          {isNonDaily && <div className="monthly-note">{habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} habit - complete once this {habit.frequency === 'yearly' ? 'year' : habit.frequency === 'monthly' ? 'month' : 'week'}</div>}
-        </div>
+        ) : (
+          <div className="start-date-info" onClick={handleDateEdit}>
+            <span className="date-icon">📅</span>
+            <span className="date-text">Since {new Date(habit.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+          </div>
+        )}
+        
+        {habit.frequency !== 'daily' && (
+          <div className="frequency-note">
+            {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} habit
+          </div>
+        )}
       </div>
+      
+      <button 
+        className={`modern-vote-btn ${stats.isCompletedToday ? 'voted' : ''}`}
+        onClick={onVote}
+        aria-label={`${stats.isCompletedToday ? 'Remove vote for' : 'Cast vote for'} ${habit.name}`}
+        style={{ '--vote-color': categoryColor }}
+      >
+        <span className="vote-btn-icon">
+          {stats.isCompletedToday ? '✅' : '🗳️'}
+        </span>
+        <span className="vote-btn-text">
+          {stats.isCompletedToday ? 'Vote Cast!' : 'Cast Vote'}
+        </span>
+        <div className="vote-btn-ripple"></div>
+      </button>
     </div>
   );
 };
