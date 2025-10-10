@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './modern-components.css';
 
 const HabitCard = ({ habit, stats, onToggle, onDelete }) => {
   const [showDetails, setShowDetails] = useState(false);

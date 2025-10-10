@@ -41,18 +41,22 @@ const AddHabit = ({ onAdd, loading }) => {
     
     if (!validateForm()) return;
     
-    const success = await onAdd(formData);
-    if (success) {
-      setFormData({
-        name: '',
-        icon: '⭐',
-        identity: '',
-        cue: '',
-        reward: '',
-        twoMinuteVersion: '',
-        frequency: 'daily'
-      });
-      setErrors({});
+    try {
+      const success = await onAdd(formData);
+      if (success) {
+        setFormData({
+          name: '',
+          icon: '⭐',
+          identity: '',
+          cue: '',
+          reward: '',
+          twoMinuteVersion: '',
+          frequency: 'daily'
+        });
+        setErrors({});
+      }
+    } catch (error) {
+      setErrors({ submit: 'Failed to create habit. Please try again.' });
     }
   };
 
@@ -180,6 +184,12 @@ const AddHabit = ({ onAdd, loading }) => {
             <div className="satisfaction-note">Track completion for instant satisfaction</div>
           </div>
         </div>
+        
+        {errors.submit && (
+          <div className="error-message" role="alert">
+            {errors.submit}
+          </div>
+        )}
         
         <button 
           type="submit" 

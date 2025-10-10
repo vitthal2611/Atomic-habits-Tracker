@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
-import './App.css';
-import './AddHabit.css';
-import { useHabits } from './hooks/useHabits';
-import ErrorBoundary from './components/ErrorBoundary';
+import { useHabits } from '../hooks/useHabits';
+import ErrorBoundary from '../components/ErrorBoundary';
+import HabitCard from '../components/HabitCard';
+import AddHabit from '../components/AddHabit';
+import TodayFocus from '../components/TodayFocus';
+import CompoundEffect from '../components/CompoundEffect';
+import VoteTracker from '../components/VoteTracker';
+import Dashboard from '../components/Dashboard';
 
-import HabitCard from './components/HabitCard';
-import AddHabit from './components/AddHabit';
-import TodayFocus from './components/TodayFocus';
-import CompoundEffect from './components/CompoundEffect';
-import VoteTracker from './components/VoteTracker';
-import Dashboard from './components/Dashboard';
-
-
-
-function App() {
+export function UnifiedApp() {
   const [view, setView] = useState('dashboard');
   const [currentDate, setCurrentDate] = useState(new Date());
   
@@ -78,6 +73,8 @@ function App() {
               getHabitStats={getHabitStats}
               toggleHabit={toggleHabit}
               currentDate={currentDate}
+              addHabit={addHabit}
+              loading={loading}
             />
           )}
           
@@ -219,7 +216,3 @@ function Header({ currentDate, onNavigateDate, view, setView }) {
     </header>
   );
 }
-
-
-
-export default App;

@@ -1,15 +1,20 @@
 import React, { useState, useMemo } from 'react';
+import AddHabit from './AddHabit';
 import './Dashboard.css';
 
-const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate }) => {
+const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate, addHabit, loading }) => {
   const [focusMode, setFocusMode] = useState('today');
+  const [showAddHabit, setShowAddHabit] = useState(false);
   
   const todayHabits = useMemo(() => 
     habits.filter(h => new Date(h.startDate) <= currentDate)
   , [habits, currentDate]);
 
   const identityScore = useMemo(() => {
-    const completed = todayHabits.filter(h => getHabitStats(h, currentDate).isCompletedToday).length;
+    const completed = todayHabits.filter(h => {
+      const stats = getHabitStats(h, currentDate);
+      return stats && stats.isCompletedToday;
+    }).length;
     return Math.round((completed / Math.max(todayHabits.length, 1)) * 100);
   }, [todayHabits, getHabitStats, currentDate]);
 
@@ -41,7 +46,23 @@ const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate }) =
       {/* Quick Actions - Make It Easy */}
       <section className="quick-actions">
         <div className="action-cards">
-          {todayHabits.slice(0, 3).map(habit => {
+          {/* Add New Habit Card - Always First */}
+          <div className="quick-card add-habit-card">
+            <div className="quick-icon">➕</div>
+            <div className="quick-content">
+              <h3>Create New Habit</h3>
+              <p>Build your atomic system</p>
+            </div>
+            <button 
+              className="quick-vote add-btn"
+              onClick={() => setShowAddHabit(!showAddHabit)}
+              aria-label="Add new habit"
+            >
+              {showAddHabit ? '✕' : '+'}
+            </button>
+          </div>
+          
+          {todayHabits.slice(0, 2).map(habit => {
             const habitStats = getHabitStats(habit, currentDate);
             return (
               <QuickActionCard 
@@ -54,6 +75,13 @@ const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate }) =
           })}
         </div>
       </section>
+
+      {/* Add Habit Form */}
+      {showAddHabit && (
+        <section className="add-habit-section">
+          <AddHabit onAdd={addHabit} loading={loading} />
+        </section>
+      )}
 
       {/* Habit Grid - Make It Attractive */}
       <section className="habits-section">
@@ -103,63 +131,69 @@ const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate }) =
   );
 };
 
-const QuickActionCard = ({ habit, stats, onVote }) => (
-  <div className={`quick-card ${stats.isCompletedToday ? 'completed' : ''}`}>
-    <div className="quick-icon">{habit.icon}</div>
-    <div className="quick-content">
-      <h3>{habit.name}</h3>
-      <p>{habit.identity}</p>
-    </div>
-    <button 
-      className={`quick-vote ${stats.isCompletedToday ? 'voted' : ''}`}
-      onClick={onVote}
-      aria-label={`Vote for ${habit.name}`}
-    >
-      {stats.isCompletedToday ? '✓' : '○'}
-    </button>
-  </div>
-);
-
-const HabitCard = ({ habit, stats, onVote }) => (
-  <div className={`habit-card ${stats.isCompletedToday ? 'completed' : ''}`}>
-    <div className="card-header">
-      <span className="habit-icon">{habit.icon}</span>
-      <div className="streak-badge">
-        {stats.streak > 0 && (
-          <>
-            <span className="streak-fire">🔥</span>
-            <span className="streak-count">{stats.streak}</span>
-          </>
-        )}
+const QuickActionCard = ({ habit, stats, onVote }) => {
+  const safeStats = stats || { isCompletedToday: false, streak: 0, todayCount: 0 };
+  return (
+    <div className={`quick-card ${safeStats.isCompletedToday ? 'completed' : ''}`}>
+      <div className="quick-icon">{habit.icon}</div>
+      <div className="quick-content">
+        <h3>{habit.name}</h3>
+        <p>{habit.identity}</p>
       </div>
-    </div>
-    
-    <div className="card-body">
-      <h3 className="habit-name">{habit.name}</h3>
-      <p className="habit-identity">{habit.identity}</p>
-      
-      <div className="habit-cue">
-        <span className="cue-icon">🔗</span>
-        <span>{habit.cue}</span>
-      </div>
-    </div>
-    
-    <div className="card-footer">
       <button 
-        className={`vote-button ${stats.isCompletedToday ? 'voted' : ''}`}
+        className={`quick-vote ${safeStats.isCompletedToday ? 'voted' : ''}`}
         onClick={onVote}
-        aria-pressed={stats.isCompletedToday}
+        aria-label={`Vote for ${habit.name}`}
       >
-        <span className="vote-icon">
-          {stats.isCompletedToday ? '✓' : '🗳️'}
-        </span>
-        <span className="vote-text">
-          {stats.isCompletedToday ? 'Vote Cast' : 'Cast Vote'}
-        </span>
+        {safeStats.isCompletedToday ? '✓' : '○'}
       </button>
     </div>
-  </div>
-);
+  );
+};
+
+const HabitCard = ({ habit, stats, onVote }) => {
+  const safeStats = stats || { isCompletedToday: false, streak: 0, todayCount: 0 };
+  return (
+    <div className={`habit-card ${safeStats.isCompletedToday ? 'completed' : ''}`}>
+      <div className="card-header">
+        <span className="habit-icon">{habit.icon}</span>
+        <div className="streak-badge">
+          {safeStats.streak > 0 && (
+            <>
+              <span className="streak-fire">🔥</span>
+              <span className="streak-count">{safeStats.streak}</span>
+            </>
+          )}
+        </div>
+      </div>
+      
+      <div className="card-body">
+        <h3 className="habit-name">{habit.name}</h3>
+        <p className="habit-identity">{habit.identity}</p>
+        
+        <div className="habit-cue">
+          <span className="cue-icon">🔗</span>
+          <span>{habit.cue}</span>
+        </div>
+      </div>
+      
+      <div className="card-footer">
+        <button 
+          className={`vote-button ${safeStats.isCompletedToday ? 'voted' : ''}`}
+          onClick={onVote}
+          aria-pressed={safeStats.isCompletedToday}
+        >
+          <span className="vote-icon">
+            {safeStats.isCompletedToday ? '✓' : '🗳️'}
+          </span>
+          <span className="vote-text">
+            {safeStats.isCompletedToday ? 'Vote Cast' : 'Cast Vote'}
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const CompoundVisualization = ({ stats }) => {
   const compoundValue = Math.pow(1.01, stats.avgDays);

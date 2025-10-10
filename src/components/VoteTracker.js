@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import './VoteTracker.css';
-import './modern-components.css';
 
 const VoteTracker = ({ habits, view, currentDate, getHabitStats, toggleHabit }) => {
   const days = useMemo(() => {

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './modern-components.css';
 
 const TodayFocus = ({ habits, stats, getHabitStats, updateHabitCount, updateStartDate, currentDate }) => {
   const isToday = currentDate.toDateString() === new Date().toDateString();
