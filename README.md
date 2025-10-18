@@ -5,11 +5,14 @@ A production-ready habit tracking application based on James Clear's "Atomic Hab
 ## ✨ Features
 
 ### Core Functionality
+- **Habit Scorecard**: Complete awareness audit of all current habits before building new ones
 - **Daily Habit Tracking**: Mark habits as complete with visual feedback
 - **Identity-Based Habits**: Focus on who you want to become, not just what you want to achieve
 - **Four Laws Implementation**: Make it Obvious, Attractive, Easy, and Satisfying
 - **Streak Tracking**: Monitor consistency with daily, weekly, monthly, and yearly views
 - **Compound Effect Visualization**: See how small improvements compound over time
+- **Plateau of Latent Potential**: Understand why habits feel useless before breakthrough
+- **The Goldilocks Rule**: Maintain optimal difficulty for maximum engagement
 
 ### User Experience
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile
@@ -20,10 +23,20 @@ A production-ready habit tracking application based on James Clear's "Atomic Hab
 
 ### Views & Analytics
 - **Daily View**: Focus on today's habits and identity votes
-- **Backlog View**: Catch up on missed habits from the past week
-- **Yesterday View**: Reflect on previous day's progress
+- **Progress View**: Track weekly, monthly, quarterly, and yearly progress
+- **Insights View**: Plateau visualization, Goldilocks Rule analysis, weekly reviews
+- **Tools View**: Environment design, temptation bundling, habit contracts
 - **Identity Tracker**: Visualize habit consistency over time periods
 - **Compound Growth**: Track total votes cast and identity strength
+
+### Advanced Features
+- **Weekly Review & Reflection**: Systematic review of what worked and what didn't
+- **Environment Design**: Make good habits obvious and bad habits invisible
+- **Temptation Bundling**: Link habits you need with activities you want
+- **Habit Contracts**: Create accountability through commitment devices
+- **Habit Stacking**: Build new habits onto existing routines
+- **2-Minute Rule**: Start with the smallest possible version
+- **Never Miss Twice**: Visual warnings when breaking streaks
 
 ## 🚀 Quick Start
 
@@ -59,30 +72,38 @@ npm run analyze
 ### Component Structure
 ```
 src/
+├── app/
+│   └── UnifiedApp.tsx  # Main application with routing
 ├── components/          # Reusable UI components
-│   ├── AddHabit.js     # Habit creation form
+│   ├── AddHabit.js     # Enhanced habit creation form
 │   ├── HabitCard.js    # Individual habit display
 │   ├── TodayFocus.js   # Daily habit overview
 │   ├── CompoundEffect.js # Growth visualization
-│   ├── BacklogView.js  # Past habits (lazy loaded)
-│   ├── YesterdayView.js # Previous day review (lazy loaded)
-│   ├── IdentityTracker.js # Long-term tracking (lazy loaded)
+│   ├── ProgressTracker.js # Multi-period tracking
+│   ├── PlateauVisualization.js # Valley of disappointment chart
+│   ├── WeeklyReview.js # Reflection and review system
+│   ├── EnvironmentDesign.js # Environment optimization
+│   ├── TemptationBundling.js # Link needs with wants
+│   ├── HabitContract.js # Commitment devices
+│   ├── GoldilocksRule.js # Optimal difficulty analysis
 │   ├── ErrorBoundary.js # Error handling
-│   └── LoadingSpinner.js # Loading states
+│   └── EnhancedComponents.css # Styles for new features
 ├── hooks/              # Custom React hooks
-│   └── useHabits.js    # Habit state management
-├── utils/              # Utility functions
-├── App.js              # Main application component
+│   ├── useHabits.js    # Local habit state management
+│   └── useFirebaseHabits.js # Firebase integration
 ├── App.css             # Global styles
 └── index.js            # Application entry point
 ```
 
 ### Key Design Decisions
+- **Identity-First Approach**: Every feature reinforces identity-based habits
+- **Comprehensive Onboarding**: Habit scorecard ensures awareness before action
+- **Progressive Disclosure**: Advanced features revealed as users progress
 - **Custom Hooks**: Separate business logic from UI components
 - **Error Boundaries**: Graceful error handling and recovery
-- **Lazy Loading**: Code splitting for better performance
 - **Accessibility First**: WCAG 2.1 AA compliance
-- **Progressive Enhancement**: Works without JavaScript for core features
+- **Firebase Integration**: Real-time sync and authentication
+- **Local Storage Fallback**: Works offline with localStorage
 
 ## 🎨 Design System
 

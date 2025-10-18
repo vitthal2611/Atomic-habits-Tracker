@@ -71,17 +71,19 @@ const AddHabit = ({ onAdd, loading, habits }) => {
           </div>
         </div>
 
-        <div className="form-group">
-          <label>What's the visual cue?</label>
+        <div className="form-group highlight-cue">
+          <label>👁️ What's the visual cue? (Make it Obvious!)</label>
           <input 
             value={formData.visualCue}
             onChange={(e) => setFormData(prev => ({ ...prev, visualCue: e.target.value }))}
             placeholder="Book on nightstand"
+            required
           />
+          <small className="form-hint">💡 Place a visual reminder in your environment. Make good habits obvious!</small>
         </div>
 
-        <div className="form-group">
-          <label>After which habit? (Optional)</label>
+        <div className="form-group highlight-stack">
+          <label>🔗 After which habit? (Habit Stacking - Recommended!)</label>
           <select 
             value={formData.afterHabit}
             onChange={(e) => setFormData(prev => ({ ...prev, afterHabit: e.target.value }))}
@@ -89,6 +91,7 @@ const AddHabit = ({ onAdd, loading, habits }) => {
             <option value="">Select existing habit...</option>
             {habits?.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
           </select>
+          <small className="form-hint">💡 Habit stacking makes new habits stick. Link to an existing routine!</small>
         </div>
 
         <div className="form-group highlight">

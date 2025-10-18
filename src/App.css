@@ -89,6 +89,13 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.scorecard-subtitle {
+  font-size: 0.95rem;
+  color: #475569;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
 .scorecard-instruction {
   font-weight: 600;
   color: #1e293b;
@@ -222,11 +229,77 @@ body {
   cursor: not-allowed;
 }
 
+.scorecard-insights {
+  background: #f0f9ff;
+  border: 2px solid #93c5fd;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
 .scorecard-note {
   text-align: center;
+  color: #1e40af;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.scorecard-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 10px;
+  background: white;
+}
+
+.stat-item.good {
+  border: 2px solid #10b981;
+}
+
+.stat-item.neutral {
+  border: 2px solid #64748b;
+}
+
+.stat-item.bad {
+  border: 2px solid #ef4444;
+}
+
+.stat-count {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.stat-item.good .stat-count {
+  color: #10b981;
+}
+
+.stat-item.neutral .stat-count {
   color: #64748b;
-  font-style: italic;
+}
+
+.stat-item.bad .stat-count {
+  color: #ef4444;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.scorecard-tip {
+  text-align: center;
+  color: #1e40af;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 /* Today View */
@@ -710,6 +783,36 @@ body {
 
 .form-group.highlight label {
   color: #92400e;
+}
+
+.form-group.highlight-stack {
+  background: #eff6ff;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 2px solid #3b82f6;
+}
+
+.form-group.highlight-stack label {
+  color: #1e40af;
+}
+
+.form-group.highlight-cue {
+  background: #f0fdf4;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 2px solid #10b981;
+}
+
+.form-group.highlight-cue label {
+  color: #065f46;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  opacity: 0.9;
 }
 
 .form-group input:focus {

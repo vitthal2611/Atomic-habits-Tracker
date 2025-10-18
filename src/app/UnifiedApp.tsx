@@ -4,11 +4,23 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import AddHabit from '../components/AddHabit';
 import ProgressTracker from '../components/ProgressTracker';
 import Auth from '../components/Auth';
+import PlateauVisualization from '../components/PlateauVisualization';
+import WeeklyReview from '../components/WeeklyReview';
+import EnvironmentDesign from '../components/EnvironmentDesign';
+import HabitContract from '../components/HabitContract';
+import GoldilocksRule from '../components/GoldilocksRule';
+import TemptationBundling from '../components/TemptationBundling';
+import OnboardingTips from '../components/OnboardingTips';
+import '../components/EnhancedComponents.css';
 
 export function UnifiedApp() {
   const [view, setView] = useState(
     localStorage.getItem('scorecardCompleted') ? 'today' : 'scorecard'
   );
+  const [contracts, setContracts] = useState(() => {
+    const saved = localStorage.getItem('habitContracts');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [showAddHabit, setShowAddHabit] = useState(false);
   
   const {
@@ -34,6 +46,17 @@ export function UnifiedApp() {
     }
   };
 
+  const handleSaveContract = (contract) => {
+    const updated = [...contracts, contract];
+    setContracts(updated);
+    localStorage.setItem('habitContracts', JSON.stringify(updated));
+  };
+
+  const handleUpdateHabit = (id, updates) => {
+    // This would need to be implemented in useFirebaseHabits
+    console.log('Update habit:', id, updates);
+  };
+
   const stats = getOverallStats();
 
   if (error) {
@@ -47,10 +70,22 @@ export function UnifiedApp() {
     );
   }
 
+  const avgDaysSinceStart = habits.length > 0 
+    ? Math.round(habits.reduce((sum, h) => {
+        const days = Math.floor((Date.now() - new Date(h.startDate).getTime()) / (1000 * 60 * 60 * 24));
+        return sum + days;
+      }, 0) / habits.length)
+    : 0;
+
   return (
     <ErrorBoundary>
       <div className="app-container">
-        <Header view={view} setView={setView} />
+        <OnboardingTips 
+          currentView={view}
+          habitCount={habits.length}
+          daysSinceStart={avgDaysSinceStart}
+        />
+        <Header view={view} setView={setView} habits={habits} />
         
         <main>
           {view === 'scorecard' && (
@@ -105,13 +140,52 @@ export function UnifiedApp() {
               </div>
             </div>
           )}
+          
+          {view === 'insights' && (
+            <div className="insights-container">
+              <PlateauVisualization 
+                daysSinceStart={stats.avgDays}
+                streak={stats.bestStreak}
+              />
+              <GoldilocksRule 
+                habits={habits}
+                getHabitStats={getHabitStats}
+                onUpdateDifficulty={handleUpdateHabit}
+              />
+              <WeeklyReview 
+                habits={habits}
+                getHabitStats={getHabitStats}
+              />
+            </div>
+          )}
+          
+          {view === 'tools' && (
+            <div className="tools-container">
+              <EnvironmentDesign 
+                habits={habits}
+                onUpdateHabit={handleUpdateHabit}
+              />
+              <TemptationBundling 
+                habits={habits}
+              />
+              <HabitContract 
+                habits={habits}
+                onSaveContract={handleSaveContract}
+              />
+            </div>
+          )}
         </main>
       </div>
     </ErrorBoundary>
   );
 }
 
-function Header({ view, setView }) {
+function Header({ view, setView, habits }) {
+  const showInsightsBadge = habits.length > 0 && habits.some(h => {
+    const daysSince = Math.floor((Date.now() - new Date(h.startDate).getTime()) / (1000 * 60 * 60 * 24));
+    return daysSince >= 10 && daysSince < 21;
+  });
+
   return (
     <header className="simple-header">
       <h1>🎯 Atomic Habits</h1>
@@ -128,6 +202,18 @@ function Header({ view, setView }) {
           onClick={() => setView('progress')}
         >
           Progress
+        </button>
+        <button 
+          className={view === 'insights' ? 'active' : ''}
+          onClick={() => setView('insights')}
+        >
+          Insights {showInsightsBadge && '🔥'}
+        </button>
+        <button 
+          className={view === 'tools' ? 'active' : ''}
+          onClick={() => setView('tools')}
+        >
+          Tools
         </button>
       </nav>
     </header>
@@ -250,12 +336,18 @@ function HabitCheckItem({ habit, stats, onToggle, onDelete }) {
 
 function HabitScorecard({ onComplete }) {
   const [habits, setHabits] = useState([
-    { id: 1, name: 'Check phone first thing', rating: null },
-    { id: 2, name: 'Drink coffee', rating: null },
-    { id: 3, name: 'Scroll social media', rating: null },
-    { id: 4, name: 'Exercise', rating: null },
-    { id: 5, name: 'Read', rating: null },
-    { id: 6, name: 'Watch TV', rating: null },
+    { id: 1, name: 'Wake up', rating: null },
+    { id: 2, name: 'Check phone first thing', rating: null },
+    { id: 3, name: 'Drink coffee/tea', rating: null },
+    { id: 4, name: 'Eat breakfast', rating: null },
+    { id: 5, name: 'Shower', rating: null },
+    { id: 6, name: 'Scroll social media', rating: null },
+    { id: 7, name: 'Exercise', rating: null },
+    { id: 8, name: 'Read', rating: null },
+    { id: 9, name: 'Watch TV', rating: null },
+    { id: 10, name: 'Eat snacks', rating: null },
+    { id: 11, name: 'Work/Study', rating: null },
+    { id: 12, name: 'Go to bed', rating: null },
   ]);
   const [customHabit, setCustomHabit] = useState('');
 
@@ -277,10 +369,11 @@ function HabitScorecard({ onComplete }) {
       <div className="scorecard-header">
         <h2>📋 Habit Scorecard</h2>
         <p>Before building new habits, let's identify your current ones.</p>
-        <p className="scorecard-instruction">Rate each habit:</p>
+        <p className="scorecard-subtitle">List ALL your daily habits - from waking up to going to bed. Then rate each one.</p>
+        <p className="scorecard-instruction">Rate each habit based on your desired identity:</p>
         <div className="rating-legend">
           <span><strong>++</strong> Good (helps you become who you want to be)</span>
-          <span><strong>=</strong> Neutral</span>
+          <span><strong>=</strong> Neutral (neither helps nor hurts)</span>
           <span><strong>--</strong> Bad (goes against who you want to be)</span>
         </div>
       </div>
@@ -332,9 +425,28 @@ function HabitScorecard({ onComplete }) {
         {allRated ? 'Continue to Today →' : 'Rate all habits to continue'}
       </button>
 
-      <p className="scorecard-note">
-        💡 Awareness comes before change. You can't improve a habit you don't notice.
-      </p>
+      <div className="scorecard-insights">
+        <p className="scorecard-note">
+          💡 <strong>Awareness comes before change.</strong> You can't improve a habit you don't notice.
+        </p>
+        <div className="scorecard-stats">
+          <div className="stat-item good">
+            <span className="stat-count">{habits.filter(h => h.rating === 'good').length}</span>
+            <span className="stat-label">Good Habits</span>
+          </div>
+          <div className="stat-item neutral">
+            <span className="stat-count">{habits.filter(h => h.rating === 'neutral').length}</span>
+            <span className="stat-label">Neutral</span>
+          </div>
+          <div className="stat-item bad">
+            <span className="stat-count">{habits.filter(h => h.rating === 'bad').length}</span>
+            <span className="stat-label">Bad Habits</span>
+          </div>
+        </div>
+        <p className="scorecard-tip">
+          🎯 Focus on building good habits and making bad habits invisible. Start with the 2-minute version!
+        </p>
+      </div>
     </div>
   );
 }
