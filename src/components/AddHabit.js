@@ -83,15 +83,15 @@ const AddHabit = ({ onAdd, loading, habits }) => {
         </div>
 
         <div className="form-group highlight-stack">
-          <label>🔗 After which habit? (Habit Stacking - Recommended!)</label>
+          <label>🔗 After which habit? (Habit Stacking - HIGHLY Recommended!)</label>
           <select 
             value={formData.afterHabit}
             onChange={(e) => setFormData(prev => ({ ...prev, afterHabit: e.target.value }))}
           >
-            <option value="">Select existing habit...</option>
-            {habits?.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
+            <option value="">⚠️ No stacking (harder to remember)</option>
+            {habits?.map(h => <option key={h.id} value={h.name}>{h.icon} {h.name} {h.time && `(${h.time})`}</option>)}
           </select>
-          <small className="form-hint">💡 Habit stacking makes new habits stick. Link to an existing routine!</small>
+          <small className="form-hint">💡 <strong>Habit stacking is the #1 way to build new habits.</strong> After [CURRENT HABIT], I will [NEW HABIT]. Don't skip this!</small>
         </div>
 
         <div className="form-group highlight">

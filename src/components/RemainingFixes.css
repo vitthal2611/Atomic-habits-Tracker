@@ -1,0 +1,666 @@
+/* Habit Loop with Craving */
+.habit-loop {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.habit-loop h4 {
+  text-align: center;
+  color: #1e293b;
+  margin-bottom: 2rem;
+}
+
+.loop-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.loop-step {
+  flex: 1;
+  min-width: 150px;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.loop-step.cue {
+  background: #eff6ff;
+  border: 2px solid #3b82f6;
+}
+
+.loop-step.craving {
+  background: #fef7cd;
+  border: 2px solid #f59e0b;
+}
+
+.loop-step.response {
+  background: #f0fdf4;
+  border: 2px solid #10b981;
+}
+
+.loop-step.reward {
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.5rem;
+  font-weight: 700;
+}
+
+.step-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+}
+
+.step-content {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.add-craving-btn {
+  padding: 0.5rem 1rem;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.loop-arrow {
+  font-size: 1.5rem;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.craving-edit {
+  background: #fef7cd;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.craving-edit label {
+  display: block;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 0.5rem;
+}
+
+.craving-edit input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #fbbf24;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-actions button {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-actions button:first-child {
+  background: #10b981;
+  color: white;
+}
+
+.edit-actions button:last-child {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.loop-explanation {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+/* Monthly Scorecard */
+.monthly-scorecard-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.prompt-content {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  max-width: 500px;
+}
+
+.prompt-content h3 {
+  font-size: 2rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.prompt-content p {
+  color: #64748b;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.start-review-btn {
+  width: 100%;
+  padding: 1rem;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.skip-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.monthly-scorecard-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.scorecard-content {
+  position: relative;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 10000;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #fef2f2;
+  color: #ef4444;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.scorecard-content h2 {
+  text-align: center;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.scorecard-content > p {
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.habit-name-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.changed-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.scorecard-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.summary-stat {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.summary-stat.good {
+  background: #f0fdf4;
+  border-color: #10b981;
+}
+
+.summary-stat.neutral {
+  background: #f8fafc;
+  border-color: #64748b;
+}
+
+.summary-stat.bad {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.stat-num {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.summary-stat.good .stat-num {
+  color: #10b981;
+}
+
+.summary-stat.neutral .stat-num {
+  color: #64748b;
+}
+
+.summary-stat.bad .stat-num {
+  color: #ef4444;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.complete-review-btn {
+  width: 100%;
+  padding: 1rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.complete-review-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Habit Progression */
+.habit-progression {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.progression-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.progression-header h4 {
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.progression-header p {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.progression-timeline {
+  position: relative;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+}
+
+.progression-timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #e2e8f0;
+}
+
+.progression-level {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.level-marker {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  z-index: 1;
+}
+
+.progression-level.current .level-marker {
+  background: #10b981;
+  color: white;
+  box-shadow: 0 0 0 4px #f0fdf4;
+}
+
+.level-content {
+  flex: 1;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.progression-level.current .level-content {
+  background: #f0fdf4;
+  border: 2px solid #10b981;
+}
+
+.level-text {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.level-date {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.progression-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.progression-stats .stat {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.progression-stats .stat-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.progression-stats .stat-value {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.level-up-btn {
+  width: 100%;
+  padding: 1rem;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.level-up-form {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.level-up-form label {
+  display: block;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.level-up-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form-actions button:first-child {
+  background: #10b981;
+  color: white;
+}
+
+.form-actions button:last-child {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.progression-tip {
+  background: #eff6ff;
+  border: 2px solid #93c5fd;
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #1e40af;
+}
+
+/* Pattern Insights */
+.pattern-insights {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.insights-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.insights-header h3 {
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.insights-header p {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.no-insights {
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.insights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.insight-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.insight-card.weekday-weekend {
+  background: #fef7cd;
+  border-color: #fbbf24;
+}
+
+.insight-card.best-day {
+  background: #f0fdf4;
+  border-color: #10b981;
+}
+
+.insight-card.correlation {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.insight-icon {
+  font-size: 2rem;
+}
+
+.insight-content {
+  flex: 1;
+}
+
+.insight-message {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.insight-suggestion {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.insights-footer {
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Habit Selector */
+.habit-selector {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.habit-selector label {
+  display: block;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.75rem;
+}
+
+.habit-selector select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  background: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .loop-diagram {
+    flex-direction: column;
+  }
+  
+  .loop-arrow {
+    transform: rotate(90deg);
+  }
+  
+  .scorecard-summary,
+  .progression-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .progression-timeline::before {
+    left: 10px;
+  }
+  
+  .level-marker {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+}

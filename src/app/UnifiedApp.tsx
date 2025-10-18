@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFirebaseHabits } from '../hooks/useFirebaseHabits';
 import ErrorBoundary from '../components/ErrorBoundary';
 import AddHabit from '../components/AddHabit';
@@ -8,10 +8,20 @@ import PlateauVisualization from '../components/PlateauVisualization';
 import WeeklyReview from '../components/WeeklyReview';
 import EnvironmentDesign from '../components/EnvironmentDesign';
 import HabitContract from '../components/HabitContract';
-import GoldilocksRule from '../components/GoldilocksRule';
 import TemptationBundling from '../components/TemptationBundling';
 import OnboardingTips from '../components/OnboardingTips';
+import CompoundGrowthChart from '../components/CompoundGrowthChart';
+import HabitCalendar from '../components/HabitCalendar';
+import HabitStackingSuggestions from '../components/HabitStackingSuggestions';
+import NeverMissTwice from '../components/NeverMissTwice';
+import ImprovedGoldilocksRule from '../components/ImprovedGoldilocksRule';
+import HabitLoopWithCraving from '../components/HabitLoopWithCraving';
+import MonthlyScorecard from '../components/MonthlyScorecard';
+import HabitProgression from '../components/HabitProgression';
+import PatternInsights from '../components/PatternInsights';
 import '../components/EnhancedComponents.css';
+import '../components/CriticalFixes.css';
+import '../components/RemainingFixes.css';
 
 export function UnifiedApp() {
   const [view, setView] = useState(
@@ -22,6 +32,8 @@ export function UnifiedApp() {
     return saved ? JSON.parse(saved) : [];
   });
   const [showAddHabit, setShowAddHabit] = useState(false);
+  const [showMonthlyScorecard, setShowMonthlyScorecard] = useState(false);
+  const [selectedHabitForDetails, setSelectedHabitForDetails] = useState(null);
   
   const {
     habits,
@@ -35,6 +47,20 @@ export function UnifiedApp() {
     getOverallStats,
     clearError
   } = useFirebaseHabits();
+
+  // Check for monthly scorecard
+  useEffect(() => {
+    if (!user) return;
+    const lastReview = localStorage.getItem('lastScorecardReview');
+    if (!lastReview) {
+      localStorage.setItem('lastScorecardReview', new Date().toISOString());
+      return;
+    }
+    const daysSince = Math.floor((Date.now() - new Date(lastReview)) / (1000 * 60 * 60 * 24));
+    if (daysSince >= 30 && habits.length > 0) {
+      setShowMonthlyScorecard(true);
+    }
+  }, [habits.length, user]);
 
   if (!user) {
     return <Auth />;
@@ -77,8 +103,15 @@ export function UnifiedApp() {
       }, 0) / habits.length)
     : 0;
 
+  const handleQuickComplete = (habitId) => {
+    toggleHabit(habitId, new Date());
+  };
+
   return (
     <ErrorBoundary>
+      {showMonthlyScorecard && (
+        <MonthlyScorecard onClose={() => setShowMonthlyScorecard(false)} />
+      )}
       <div className="app-container">
         <OnboardingTips 
           currentView={view}
@@ -96,22 +129,39 @@ export function UnifiedApp() {
           )}
           
           {view === 'today' && (
-            <TodayView 
-              habits={habits}
-              stats={stats}
-              getHabitStats={getHabitStats}
-              toggleHabit={toggleHabit}
-              handleDeleteHabit={handleDeleteHabit}
-              showAddHabit={showAddHabit}
-              setShowAddHabit={setShowAddHabit}
-              addHabit={addHabit}
-              loading={loading}
-              allHabits={habits}
-            />
+            <>
+              <NeverMissTwice 
+                habits={habits}
+                getHabitStats={getHabitStats}
+                onQuickComplete={handleQuickComplete}
+              />
+              <TodayView 
+                habits={habits}
+                stats={stats}
+                getHabitStats={getHabitStats}
+                toggleHabit={toggleHabit}
+                handleDeleteHabit={handleDeleteHabit}
+                showAddHabit={showAddHabit}
+                setShowAddHabit={setShowAddHabit}
+                addHabit={addHabit}
+                loading={loading}
+                allHabits={habits}
+              />
+            </>
           )}
           
           {view === 'progress' && (
             <div className="progress-view-container">
+              <CompoundGrowthChart daysSinceStart={avgDaysSinceStart} />
+              
+              {habits.map(habit => (
+                <HabitCalendar 
+                  key={habit.id}
+                  habit={habit}
+                  getHabitStats={getHabitStats}
+                />
+              ))}
+              
               <div className="progress-periods">
                 <ProgressTracker 
                   habits={habits}
@@ -143,14 +193,42 @@ export function UnifiedApp() {
           
           {view === 'insights' && (
             <div className="insights-container">
+              <PatternInsights 
+                habits={habits}
+                getHabitStats={getHabitStats}
+              />
               <PlateauVisualization 
                 daysSinceStart={stats.avgDays}
                 streak={stats.bestStreak}
               />
-              <GoldilocksRule 
+              {selectedHabitForDetails && (
+                <>
+                  <HabitLoopWithCraving 
+                    habit={selectedHabitForDetails}
+                    onUpdate={handleUpdateHabit}
+                  />
+                  <HabitProgression 
+                    habit={selectedHabitForDetails}
+                    onUpdate={handleUpdateHabit}
+                  />
+                </>
+              )}
+              <div className="habit-selector">
+                <label>Select habit for detailed insights:</label>
+                <select 
+                  value={selectedHabitForDetails?.id || ''}
+                  onChange={(e) => setSelectedHabitForDetails(habits.find(h => h.id === e.target.value))}
+                >
+                  <option value="">Choose a habit...</option>
+                  {habits.map(h => (
+                    <option key={h.id} value={h.id}>{h.icon} {h.name}</option>
+                  ))}
+                </select>
+              </div>
+              <ImprovedGoldilocksRule 
                 habits={habits}
                 getHabitStats={getHabitStats}
-                onUpdateDifficulty={handleUpdateHabit}
+                onUpdateHabit={handleUpdateHabit}
               />
               <WeeklyReview 
                 habits={habits}
@@ -161,6 +239,11 @@ export function UnifiedApp() {
           
           {view === 'tools' && (
             <div className="tools-container">
+              <HabitStackingSuggestions 
+                habits={habits}
+                onAdd={addHabit}
+                loading={loading}
+              />
               <EnvironmentDesign 
                 habits={habits}
                 onUpdateHabit={handleUpdateHabit}
