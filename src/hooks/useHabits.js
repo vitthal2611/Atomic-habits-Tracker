@@ -4,8 +4,15 @@ export const useHabits = () => {
   const [habits, setHabits] = useState(() => {
     try {
       const saved = localStorage.getItem('habits');
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(h => h && h.id && h.name && h.identity && Array.isArray(h.daily));
+        }
+      }
+      return [];
     } catch (error) {
+      console.error('Failed to load habits:', error);
       return [];
     }
   });
@@ -243,19 +250,24 @@ export const useHabits = () => {
   }, []);
 
   const getOverallStats = useCallback(() => {
-    const completedHabits = habits.filter(h => getHabitStats(h).isCompletedToday).length;
-    
-    const totalHabits = habits.length;
-    const completedToday = completedHabits;
-    const bestStreak = Math.max(...habits.map(h => getHabitStats(h).streak), 0);
-    const identityScore = totalHabits > 0 ? Math.round((completedToday / totalHabits) * 100) : 0;
-    const totalVotes = habits.reduce((sum, h) => sum + h.daily.filter(d => d.completed).length, 0);
-    const avgDays = totalHabits > 0 ? Math.round(habits.reduce((sum, h) => {
-      return sum + getHabitStats(h).daysSinceStart;
-    }, 0) / totalHabits) : 0;
+    try {
+      const completedHabits = habits.filter(h => h && getHabitStats(h).isCompletedToday).length;
+      
+      const totalHabits = habits.length;
+      const completedToday = completedHabits;
+      const bestStreak = habits.length > 0 ? Math.max(...habits.map(h => getHabitStats(h).streak), 0) : 0;
+      const identityScore = totalHabits > 0 ? Math.round((completedToday / totalHabits) * 100) : 0;
+      const totalVotes = habits.reduce((sum, h) => sum + (h.daily?.filter(d => d.completed).length || 0), 0);
+      const avgDays = totalHabits > 0 ? Math.round(habits.reduce((sum, h) => {
+        return sum + getHabitStats(h).daysSinceStart;
+      }, 0) / totalHabits) : 0;
 
-    return { totalHabits, completedToday, bestStreak, identityScore, totalVotes, avgDays };
-  }, [habits]);
+      return { totalHabits, completedToday, bestStreak, identityScore, totalVotes, avgDays };
+    } catch (error) {
+      console.error('Error calculating stats:', error);
+      return { totalHabits: 0, completedToday: 0, bestStreak: 0, identityScore: 0, totalVotes: 0, avgDays: 0 };
+    }
+  }, [habits, getHabitStats]);
 
   const updateStartDate = useCallback((id, newDate) => {
     setHabits(prev => prev.map(habit => 

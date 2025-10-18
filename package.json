@@ -3,8 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "description": "A production-ready atomic habits tracker based on James Clear's methodology",
-  "keywords": ["habits", "productivity", "atomic-habits", "react", "pwa"],
+  "keywords": [
+    "habits",
+    "productivity",
+    "atomic-habits",
+    "react",
+    "pwa"
+  ],
   "dependencies": {
+    "firebase": "^12.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"
