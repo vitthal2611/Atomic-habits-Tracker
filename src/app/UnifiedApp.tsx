@@ -19,11 +19,23 @@ import HabitLoopWithCraving from '../components/HabitLoopWithCraving';
 import MonthlyScorecard from '../components/MonthlyScorecard';
 import HabitProgression from '../components/HabitProgression';
 import PatternInsights from '../components/PatternInsights';
+import ImprovedHabitCard from '../components/ImprovedHabitCard';
+import StreakVisualization from '../components/StreakVisualization';
+import { SkeletonList, EmptyState, ErrorState } from '../components/LoadingStates';
+import MobileCalendar from '../components/MobileCalendar';
+import FormWizard from '../components/FormWizard';
+import BottomNavigation from '../components/BottomNavigation';
+import OnboardingTutorial from '../components/OnboardingTutorial';
+import { ToastProvider, useToast } from '../components/Toast';
+import '../components/Toast.css';
+import '../components/StreakVisualization.css';
 import '../components/EnhancedComponents.css';
 import '../components/CriticalFixes.css';
 import '../components/RemainingFixes.css';
+import '../components/ImprovedTodayView.css';
 
-export function UnifiedApp() {
+function UnifiedAppContent() {
+  const toast = useToast();
   const [view, setView] = useState(
     localStorage.getItem('scorecardCompleted') ? 'today' : 'scorecard'
   );
@@ -34,7 +46,9 @@ export function UnifiedApp() {
   const [showAddHabit, setShowAddHabit] = useState(false);
   const [showMonthlyScorecard, setShowMonthlyScorecard] = useState(false);
   const [selectedHabitForDetails, setSelectedHabitForDetails] = useState(null);
-  
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
   const {
     habits,
     loading,
@@ -48,9 +62,23 @@ export function UnifiedApp() {
     clearError
   } = useFirebaseHabits();
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    const scorecardCompleted = localStorage.getItem('scorecardCompleted');
+    if (!onboardingCompleted && !scorecardCompleted && habits && habits.length === 0) {
+      setShowOnboarding(true);
+    }
+  }, [habits]);
+
   // Check for monthly scorecard
   useEffect(() => {
-    if (!user) return;
+    if (!user || !habits) return;
     const lastReview = localStorage.getItem('lastScorecardReview');
     if (!lastReview) {
       localStorage.setItem('lastScorecardReview', new Date().toISOString());
@@ -60,16 +88,21 @@ export function UnifiedApp() {
     if (daysSince >= 30 && habits.length > 0) {
       setShowMonthlyScorecard(true);
     }
-  }, [habits.length, user]);
+  }, [habits, user]);
 
   if (!user) {
     return <Auth />;
   }
 
   const handleDeleteHabit = (id) => {
-    if (window.confirm('Delete this habit? This action cannot be undone.')) {
-      deleteHabit(id);
-    }
+    const habit = habits.find(h => h.id === id);
+    if (!habit) return;
+    
+    deleteHabit(id);
+    toast.success(`"${habit.name}" deleted`, {
+      label: 'Undo',
+      onClick: () => addHabit(habit)
+    });
   };
 
   const handleSaveContract = (contract) => {
@@ -87,11 +120,8 @@ export function UnifiedApp() {
 
   if (error) {
     return (
-      <div className="error-container">
-        <div className="error-message">
-          {error}
-          <button onClick={clearError}>Try Again</button>
-        </div>
+      <div style={{ padding: '2rem' }}>
+        <ErrorState message={error} onRetry={clearError} />
       </div>
     );
   }
@@ -104,11 +134,18 @@ export function UnifiedApp() {
     : 0;
 
   const handleQuickComplete = (habitId) => {
+    const habit = habits.find(h => h.id === habitId);
     toggleHabit(habitId, new Date());
+    if (habit && toast) {
+      toast.success(`Vote cast for "${habit.name}"!`);
+    }
   };
 
   return (
-    <ErrorBoundary>
+    <>
+      {showOnboarding && (
+        <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
+      )}
       {showMonthlyScorecard && (
         <MonthlyScorecard onClose={() => setShowMonthlyScorecard(false)} />
       )}
@@ -151,15 +188,38 @@ export function UnifiedApp() {
           )}
           
           {view === 'progress' && (
+            loading ? (
+              <div className="progress-view-container">
+                <SkeletonList count={2} />
+              </div>
+            ) : habits.length === 0 ? (
+              <div className="progress-view-container">
+                <EmptyState 
+                  icon="📊"
+                  title="No Progress Yet"
+                  description="Create your first habit to start tracking your progress and building your identity."
+                  action="+ Create Habit"
+                  onAction={() => setView('today')}
+                />
+              </div>
+            ) : (
             <div className="progress-view-container">
               <CompoundGrowthChart daysSinceStart={avgDaysSinceStart} />
               
               {habits.map(habit => (
-                <HabitCalendar 
-                  key={habit.id}
-                  habit={habit}
-                  getHabitStats={getHabitStats}
-                />
+                isMobile ? (
+                  <MobileCalendar 
+                    key={habit.id}
+                    habit={habit}
+                    getHabitStats={getHabitStats}
+                  />
+                ) : (
+                  <HabitCalendar 
+                    key={habit.id}
+                    habit={habit}
+                    getHabitStats={getHabitStats}
+                  />
+                )
               ))}
               
               <div className="progress-periods">
@@ -189,9 +249,25 @@ export function UnifiedApp() {
                 />
               </div>
             </div>
+            )
           )}
           
           {view === 'insights' && (
+            loading ? (
+              <div className="insights-container">
+                <SkeletonList count={2} />
+              </div>
+            ) : habits.length === 0 ? (
+              <div className="insights-container">
+                <EmptyState 
+                  icon="💡"
+                  title="No Insights Available"
+                  description="Build habits for at least a week to unlock powerful insights about your patterns and progress."
+                  action="+ Create Habit"
+                  onAction={() => setView('today')}
+                />
+              </div>
+            ) : (
             <div className="insights-container">
               <PatternInsights 
                 habits={habits}
@@ -235,9 +311,15 @@ export function UnifiedApp() {
                 getHabitStats={getHabitStats}
               />
             </div>
+            )
           )}
           
           {view === 'tools' && (
+            loading ? (
+              <div className="tools-container">
+                <SkeletonList count={2} />
+              </div>
+            ) : (
             <div className="tools-container">
               <HabitStackingSuggestions 
                 habits={habits}
@@ -256,9 +338,27 @@ export function UnifiedApp() {
                 onSaveContract={handleSaveContract}
               />
             </div>
+            )
           )}
         </main>
+        
+        {isMobile && (
+          <BottomNavigation 
+            currentView={view}
+            onViewChange={setView}
+          />
+        )}
       </div>
+    </>
+  );
+}
+
+export function UnifiedApp() {
+  return (
+    <ErrorBoundary>
+      <ToastProvider>
+        <UnifiedAppContent />
+      </ToastProvider>
     </ErrorBoundary>
   );
 }
@@ -306,6 +406,7 @@ function Header({ view, setView, habits }) {
 function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabit, showAddHabit, setShowAddHabit, addHabit, loading, allHabits }) {
   const today = new Date();
   const todayHabits = habits.filter(h => new Date(h.startDate) <= today);
+  const completionPercentage = stats.totalHabits > 0 ? (stats.completedToday / stats.totalHabits) * 100 : 0;
   
   const groupedHabits = {
     morning: todayHabits.filter(h => h.cue?.toLowerCase().includes('morning') || h.cue?.toLowerCase().includes('wake')),
@@ -327,10 +428,38 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
     return !yesterdayStats.isCompletedToday && todayStats.streak === 0;
   });
 
+  if (loading) {
+    return (
+      <div className="today-view-improved">
+        <div className="today-progress-bar">
+          <div className="skeleton" style={{ height: '8px', marginBottom: '1rem' }} />
+        </div>
+        <SkeletonList count={3} />
+      </div>
+    );
+  }
+
   return (
-    <div className="today-container">
+    <div className="today-view-improved">
+      <div className="today-progress-bar">
+        <div className="progress-bar-container">
+          <div 
+            className="progress-bar-fill" 
+            style={{ width: `${completionPercentage}%` }}
+          />
+        </div>
+        <div className="progress-stats">
+          <span className="progress-label">Today's Progress</span>
+          <span className="progress-count">{stats.completedToday}/{stats.totalHabits}</span>
+        </div>
+      </div>
+
       <div className="today-header">
         <h2>{today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
+        
+        {stats.bestStreak >= 7 && (
+          <StreakVisualization streak={stats.currentStreak || 0} bestStreak={stats.bestStreak} />
+        )}
         
         <div className="identity-votes">
           <div className="votes-count">
@@ -344,7 +473,7 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
           </p>
         </div>
         
-        <button className="add-habit-btn" onClick={() => setShowAddHabit(!showAddHabit)}>
+        <button className="btn btn-primary" onClick={() => setShowAddHabit(!showAddHabit)}>
           {showAddHabit ? '✕ Close' : '+ Add Habit'}
         </button>
       </div>
@@ -358,27 +487,47 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
 
       {showAddHabit && (
         <div className="add-habit-inline">
-          <AddHabit onAdd={(habit) => { addHabit(habit); setShowAddHabit(false); }} loading={loading} habits={allHabits} />
+          <FormWizard 
+            onComplete={(habit) => { 
+              addHabit(habit); 
+              setShowAddHabit(false); 
+            }} 
+            habits={allHabits}
+            loading={loading}
+          />
         </div>
       )}
 
       {todayHabits.length === 0 ? (
-        <div className="empty-today">
-          <h3>Build Your System</h3>
-          <p>Add your first habit to get started</p>
-        </div>
+        <EmptyState 
+          icon="🎯"
+          title="Build Your First Habit"
+          description="Every action you take is a vote for the type of person you wish to become. Start with one small habit today."
+          action="+ Create Your First Habit"
+          onAction={() => setShowAddHabit(true)}
+        />
       ) : (
         <>
           {Object.entries(groupedHabits).map(([time, timeHabits]) => {
             if (timeHabits.length === 0) return null;
+            const timeIcons = {
+              morning: '🌅',
+              afternoon: '☀️',
+              evening: '🌙',
+              anytime: '⏰'
+            };
+            
             return (
-              <div key={time} className="time-section">
-                <h3 className="time-title">{time.charAt(0).toUpperCase() + time.slice(1)}</h3>
+              <div key={time} className="time-section-improved">
+                <div className="time-section-header">
+                  <span className="time-icon">{timeIcons[time]}</span>
+                  <h3 className="time-title">{time}</h3>
+                </div>
                 <div className="habit-checklist">
                   {timeHabits.map(habit => {
                     const habitStats = getHabitStats(habit, today);
                     return (
-                      <HabitCheckItem 
+                      <ImprovedHabitCard 
                         key={habit.id}
                         habit={habit}
                         stats={habitStats}
@@ -501,7 +650,8 @@ function HabitScorecard({ onComplete }) {
       </div>
 
       <button 
-        className="scorecard-continue"
+        className="btn btn-success btn-lg"
+        style={{ width: '100%' }}
         onClick={onComplete}
         disabled={!allRated}
       >

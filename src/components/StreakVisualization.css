@@ -1,0 +1,65 @@
+.streak-visualization {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: linear-gradient(135deg, var(--warning-light) 0%, white 100%);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--warning);
+}
+
+.streak-circle {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.streak-circle svg {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+
+.streak-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.streak-emoji {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-1);
+}
+
+.streak-number {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  color: var(--warning-dark);
+  line-height: 1;
+}
+
+.streak-label {
+  font-size: var(--text-xs);
+  color: var(--gray-600);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.streak-info {
+  text-align: center;
+}
+
+.next-milestone {
+  font-size: var(--text-base);
+  color: var(--gray-700);
+  margin-bottom: var(--space-2);
+}
+
+.best-streak {
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+}

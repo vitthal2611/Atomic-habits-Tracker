@@ -32,12 +32,11 @@
   border-radius: 50%;
   background: conic-gradient(from 0deg, #10b981 calc(var(--score) * 1%), #ffffff20 0%);
   padding: 4px;
-  animation: rotate 20s linear infinite;
+  transition: all 0.3s ease;
 }
 
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.compass-ring:hover {
+  transform: scale(1.05);
 }
 
 .identity-score {
@@ -381,6 +380,19 @@
   background: #f9fafb;
   padding: 0.5rem;
   border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.habit-craving {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #f59e0b;
+  background: #fef7cd;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-style: italic;
 }
 
 .vote-button {
@@ -400,35 +412,11 @@
   overflow: hidden;
 }
 
-.vote-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: #4f46e5;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: all 0.3s ease;
-}
-
 .vote-button:hover {
   border-color: #4f46e5;
-  color: #4f46e5;
-  transform: translateY(-2px);
-}
-
-.vote-button:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.vote-button:hover .vote-icon,
-.vote-button:hover .vote-text {
-  position: relative;
-  z-index: 1;
-  color: white;
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
 }
 
 .vote-button.voted {
@@ -436,6 +424,18 @@
   border-color: #10b981;
   color: white;
   animation: vote-success 0.6s ease-out;
+}
+
+.vote-button:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.rating-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  border-color: #4f46e5;
 }
 
 @keyframes vote-success {
@@ -537,6 +537,40 @@
   background: #f0f9ff;
   border-radius: 12px;
   border-left: 4px solid #4f46e5;
+}
+
+/* Celebration Effects */
+.habit-card.celebrating {
+  animation: celebrate 0.6s ease-out;
+  transform: scale(1.02);
+}
+
+@keyframes celebrate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); }
+  100% { transform: scale(1.02); }
+}
+
+.celebration-popup {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  animation: popup 2s ease-out forwards;
+  z-index: 10;
+}
+
+@keyframes popup {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.8); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1.1); }
+  80% { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
 }
 
 /* Responsive Design */

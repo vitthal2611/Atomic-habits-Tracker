@@ -1,0 +1,231 @@
+.form-wizard {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.wizard-progress {
+  margin-bottom: var(--space-8);
+}
+
+.progress-bar-wizard {
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.progress-fill-wizard {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  font-weight: var(--font-semibold);
+}
+
+.wizard-content {
+  min-height: 400px;
+  margin-bottom: var(--space-8);
+}
+
+.wizard-step {
+  animation: fadeIn 0.3s ease;
+}
+
+.step-title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.step-description {
+  font-size: var(--text-lg);
+  color: var(--gray-600);
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.wizard-input {
+  width: 100%;
+  padding: var(--space-4);
+  font-size: var(--text-xl);
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+  font-family: var(--font-sans);
+  min-height: 56px;
+}
+
+.wizard-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.identity-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.identity-prefix {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--primary);
+}
+
+.identity-input {
+  flex: 1;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.form-group-wizard {
+  margin-bottom: var(--space-4);
+}
+
+.form-group-wizard label {
+  display: block;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--gray-700);
+  margin-bottom: var(--space-2);
+}
+
+.examples {
+  margin-top: var(--space-6);
+}
+
+.examples-label {
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-3);
+}
+
+.example-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  padding: var(--space-2) var(--space-4);
+  background: var(--gray-100);
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-weight: var(--font-medium);
+}
+
+.chip:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.info-box {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--primary-light);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--primary);
+  margin-top: var(--space-6);
+}
+
+.info-icon {
+  font-size: var(--text-3xl);
+}
+
+.info-text {
+  flex: 1;
+  font-size: var(--text-base);
+  color: var(--gray-700);
+  line-height: var(--leading-relaxed);
+}
+
+.review-card {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-label {
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  font-weight: var(--font-semibold);
+}
+
+.review-value {
+  font-size: var(--text-base);
+  color: var(--gray-900);
+  font-weight: var(--font-medium);
+  text-align: right;
+}
+
+.optional-section {
+  background: var(--gray-50);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+}
+
+.optional-section h3 {
+  font-size: var(--text-lg);
+  color: var(--gray-700);
+  margin-bottom: var(--space-4);
+}
+
+.wizard-actions {
+  display: flex;
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .form-wizard {
+    padding: var(--space-6);
+  }
+  
+  .step-title {
+    font-size: var(--text-2xl);
+  }
+  
+  .wizard-input {
+    font-size: var(--text-lg);
+  }
+  
+  .two-column {
+    grid-template-columns: 1fr;
+  }
+}

@@ -23,8 +23,8 @@ const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate, add
       {/* Hero Section - Make It Obvious */}
       <section className="hero-section">
         <div className="identity-compass">
-          <div className="compass-ring">
-            <div className="identity-score" style={{'--score': identityScore}}>
+          <div className="compass-ring" style={{'--score': identityScore}}>
+            <div className="identity-score">
               <span className="score-value">{identityScore}%</span>
               <span className="score-label">Identity Strength</span>
             </div>
@@ -45,7 +45,7 @@ const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate, add
 
       {/* Quick Actions - Make It Easy */}
       <section className="quick-actions">
-        <div className="action-cards">
+        <div className="action-cards" style={{gridTemplateColumns: `repeat(auto-fit, minmax(280px, 1fr))`}}>
           {/* Add New Habit Card - Always First */}
           <div className="quick-card add-habit-card">
             <div className="quick-icon">➕</div>
@@ -62,7 +62,7 @@ const Dashboard = ({ habits, stats, getHabitStats, toggleHabit, currentDate, add
             </button>
           </div>
           
-          {todayHabits.slice(0, 2).map(habit => {
+          {todayHabits.map(habit => {
             const habitStats = getHabitStats(habit, currentDate);
             return (
               <QuickActionCard 
@@ -153,8 +153,18 @@ const QuickActionCard = ({ habit, stats, onVote }) => {
 
 const HabitCard = ({ habit, stats, onVote }) => {
   const safeStats = stats || { isCompletedToday: false, streak: 0, todayCount: 0 };
+  const [showCelebration, setShowCelebration] = React.useState(false);
+  
+  const handleVote = () => {
+    onVote();
+    if (!safeStats.isCompletedToday) {
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 2000);
+    }
+  };
+  
   return (
-    <div className={`habit-card ${safeStats.isCompletedToday ? 'completed' : ''}`}>
+    <div className={`habit-card ${safeStats.isCompletedToday ? 'completed' : ''} ${showCelebration ? 'celebrating' : ''}`}>
       <div className="card-header">
         <span className="habit-icon">{habit.icon}</span>
         <div className="streak-badge">
@@ -175,12 +185,18 @@ const HabitCard = ({ habit, stats, onVote }) => {
           <span className="cue-icon">🔗</span>
           <span>{habit.cue}</span>
         </div>
+        {habit.craving && (
+          <div className="habit-craving">
+            <span className="craving-icon">🎯</span>
+            <span>{habit.craving}</span>
+          </div>
+        )}
       </div>
       
       <div className="card-footer">
         <button 
           className={`vote-button ${safeStats.isCompletedToday ? 'voted' : ''}`}
-          onClick={onVote}
+          onClick={handleVote}
           aria-pressed={safeStats.isCompletedToday}
         >
           <span className="vote-icon">
@@ -190,6 +206,11 @@ const HabitCard = ({ habit, stats, onVote }) => {
             {safeStats.isCompletedToday ? 'Vote Cast' : 'Cast Vote'}
           </span>
         </button>
+        {showCelebration && (
+          <div className="celebration-popup">
+            🎉 {habit.reward || 'Great job!'} 🎉
+          </div>
+        )}
       </div>
     </div>
   );

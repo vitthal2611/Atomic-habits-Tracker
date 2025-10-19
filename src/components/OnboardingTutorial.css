@@ -1,0 +1,123 @@
+.onboarding-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: var(--space-4);
+  animation: fadeIn 0.3s ease;
+}
+
+.onboarding-modal {
+  background: white;
+  border-radius: var(--radius-xl);
+  max-width: 500px;
+  width: 100%;
+  padding: var(--space-8);
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  animation: slideUp 0.4s ease;
+}
+
+.skip-btn {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: transparent;
+  border: none;
+  color: var(--gray-500);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  transition: all var(--transition-base);
+}
+
+.skip-btn:hover {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.onboarding-content {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.onboarding-icon {
+  font-size: 5rem;
+  margin-bottom: var(--space-6);
+  animation: bounce 1s ease infinite;
+}
+
+.onboarding-title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-tight);
+}
+
+.onboarding-description {
+  font-size: var(--text-lg);
+  color: var(--gray-600);
+  line-height: var(--leading-relaxed);
+}
+
+.onboarding-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.step-indicators {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gray-300);
+  transition: all var(--transition-base);
+}
+
+.step-dot.active {
+  width: 32px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+}
+
+.step-dot.completed {
+  background: var(--success);
+}
+
+.onboarding-footer .btn {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .onboarding-modal {
+    padding: var(--space-6);
+  }
+  
+  .onboarding-icon {
+    font-size: 4rem;
+  }
+  
+  .onboarding-title {
+    font-size: var(--text-2xl);
+  }
+  
+  .onboarding-description {
+    font-size: var(--text-base);
+  }
+}
