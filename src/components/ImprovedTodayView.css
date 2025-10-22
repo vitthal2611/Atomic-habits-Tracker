@@ -227,7 +227,34 @@
   background: #fffbeb;
   border-radius: 10px;
   border-left: 4px solid #f59e0b;
+  margin-bottom: 0.75rem;
+}
+
+/* Environment Design Cues */
+.environment-cues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1rem;
+}
+
+.env-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f0fdf4;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.env-icon {
+  font-size: 1rem;
+}
+
+.env-text {
+  color: #065f46;
+  font-weight: 500;
 }
 
 .rule-label {

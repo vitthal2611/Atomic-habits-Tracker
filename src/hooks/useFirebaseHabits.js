@@ -84,12 +84,14 @@ export const useFirebaseHabits = () => {
 
   const updateHabit = useCallback(async (id, updates) => {
     if (!user) return;
+    const habit = habits.find(h => h.id === id);
+    if (!habit) return;
     try {
-      await setDoc(doc(db, 'habits', id), updates, { merge: true });
+      await setDoc(doc(db, 'habits', id), { ...habit, ...updates }, { merge: true });
     } catch (error) {
       setError(error.message);
     }
-  }, [user]);
+  }, [user, habits]);
 
   const toggleHabit = useCallback(async (id, date = null) => {
     if (!user) return;

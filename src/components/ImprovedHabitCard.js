@@ -96,6 +96,23 @@ const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete, onUpdate }) => {
             <span className="rule-label">Start with:</span>
             <span className="rule-action">{habit.twoMinuteVersion}</span>
           </div>
+
+          {habit.environment && (
+            <div className="environment-cues">
+              {habit.environment.makeObvious && (
+                <div className="env-item">
+                  <span className="env-icon">👁️</span>
+                  <span className="env-text">{habit.environment.makeObvious}</span>
+                </div>
+              )}
+              {habit.environment.makeEasy && (
+                <div className="env-item">
+                  <span className="env-icon">⚡</span>
+                  <span className="env-text">{habit.environment.makeEasy}</span>
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 

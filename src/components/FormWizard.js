@@ -3,6 +3,7 @@ import { useFormValidation, FormField } from './FormValidation';
 import './FormWizard.css';
 
 const FormWizard = ({ onComplete, habits, loading }) => {
+  const scorecardHabits = JSON.parse(localStorage.getItem('scorecardHabits') || '[]');
   const [step, setStep] = useState(1);
   
   const validationRules = {
@@ -245,6 +246,11 @@ const FormWizard = ({ onComplete, habits, loading }) => {
                 >
                   <option value="">No stacking</option>
                   {habits?.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
+                  {scorecardHabits.length > 0 && (
+                    <optgroup label="Daily Routine Habits">
+                      {scorecardHabits.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
+                    </optgroup>
+                  )}
                 </select>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useFirebaseHabits } from '../hooks/useFirebaseHabits';
 import ErrorBoundary from '../components/ErrorBoundary';
 import ProgressTracker from '../components/ProgressTracker';
@@ -96,11 +96,7 @@ function UnifiedAppContent() {
     }
   }, [habits, user]);
 
-  if (!user) {
-    return <Auth />;
-  }
-
-  const handleDeleteHabit = (id) => {
+  const handleDeleteHabit = useCallback((id) => {
     const habit = habits.find(h => h.id === id);
     if (!habit) return;
     
@@ -109,17 +105,39 @@ function UnifiedAppContent() {
       label: 'Undo',
       onClick: () => addHabit(habit)
     });
-  };
+  }, [habits, deleteHabit, toast, addHabit]);
 
-  const handleSaveContract = (contract) => {
+  const handleSaveContract = useCallback((contract) => {
     const updated = [...contracts, contract];
     setContracts(updated);
     localStorage.setItem('habitContracts', JSON.stringify(updated));
-  };
+  }, [contracts]);
 
 
 
-  const stats = getOverallStats();
+  const stats = useMemo(() => getOverallStats(), [getOverallStats]);
+
+  const avgDaysSinceStart = useMemo(() => 
+    habits.length > 0 
+      ? Math.round(habits.reduce((sum, h) => {
+          const days = Math.floor((Date.now() - new Date(h.startDate).getTime()) / (1000 * 60 * 60 * 24));
+          return sum + days;
+        }, 0) / habits.length)
+      : 0,
+    [habits]
+  );
+
+  const handleQuickComplete = useCallback((habitId) => {
+    const habit = habits.find(h => h.id === habitId);
+    toggleHabit(habitId, new Date());
+    if (habit && toast) {
+      toast.success(`Vote cast for "${habit.name}"!`);
+    }
+  }, [habits, toggleHabit, toast]);
+
+  if (!user) {
+    return <Auth />;
+  }
 
   if (error) {
     return (
@@ -128,21 +146,6 @@ function UnifiedAppContent() {
       </div>
     );
   }
-
-  const avgDaysSinceStart = habits.length > 0 
-    ? Math.round(habits.reduce((sum, h) => {
-        const days = Math.floor((Date.now() - new Date(h.startDate).getTime()) / (1000 * 60 * 60 * 24));
-        return sum + days;
-      }, 0) / habits.length)
-    : 0;
-
-  const handleQuickComplete = (habitId) => {
-    const habit = habits.find(h => h.id === habitId);
-    toggleHabit(habitId, new Date());
-    if (habit && toast) {
-      toast.success(`Vote cast for "${habit.name}"!`);
-    }
-  };
 
   return (
     <>
@@ -447,17 +450,36 @@ function Header({ view, setView, habits }) {
   );
 }
 
-function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabit, updateHabit, showAddHabit, setShowAddHabit, addHabit, loading, allHabits }) {
+const TodayView = React.memo(function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabit, updateHabit, showAddHabit, setShowAddHabit, addHabit, loading, allHabits }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const today = selectedDate;
-  const todayHabits = habits.filter(h => new Date(h.startDate) <= today);
-  const completionPercentage = stats.totalHabits > 0 ? (stats.completedToday / stats.totalHabits) * 100 : 0;
   
-  const sortedHabits = todayHabits.sort((a, b) => {
-    const timeA = a.time || '23:59';
-    const timeB = b.time || '23:59';
-    return timeA.localeCompare(timeB);
-  });
+  const todayHabits = useMemo(() => 
+    habits.filter(h => new Date(h.startDate) <= today),
+    [habits, today]
+  );
+  
+  const dateStats = useMemo(() => {
+    const completed = todayHabits.filter(h => getHabitStats(h, today).isCompletedToday).length;
+    return {
+      totalHabits: todayHabits.length,
+      completedToday: completed
+    };
+  }, [todayHabits, getHabitStats, today]);
+  
+  const completionPercentage = useMemo(() => 
+    dateStats.totalHabits > 0 ? (dateStats.completedToday / dateStats.totalHabits) * 100 : 0,
+    [dateStats]
+  );
+  
+  const sortedHabits = useMemo(() => 
+    [...todayHabits].sort((a, b) => {
+      const timeA = a.time || '23:59';
+      const timeB = b.time || '23:59';
+      return timeA.localeCompare(timeB);
+    }),
+    [todayHabits]
+  );
 
   if (loading) {
     return (
@@ -479,11 +501,6 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
-        <div className="progress-stats">
-          <span className="progress-label">Today's Progress</span>
-          <span className="progress-count">{stats.completedToday}/{stats.totalHabits}</span>
-        </div>
-        
         <div className="date-navigation">
           <button 
             className="date-nav-btn"
@@ -501,14 +518,13 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
             →
           </button>
         </div>
+        
+        <div className="progress-stats">
+          <span className="progress-label">{selectedDate.toDateString() === new Date().toDateString() ? "Today's Progress" : "Progress"}</span>
+          <span className="progress-count">{dateStats.completedToday}/{dateStats.totalHabits}</span>
+        </div>
       </div>
       
-      <div className="today-actions">
-        <button className="btn-add-habit" onClick={() => setShowAddHabit(!showAddHabit)}>
-          {showAddHabit ? '✕' : '+'}
-        </button>
-      </div>
-
       {showAddHabit && (
         <div className="add-habit-inline">
           <FormWizard 
@@ -521,6 +537,12 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
           />
         </div>
       )}
+
+      <div className="today-actions">
+        <button className="btn-add-habit" onClick={() => setShowAddHabit(!showAddHabit)}>
+          {showAddHabit ? '✕' : '+'}
+        </button>
+      </div>
 
       {todayHabits.length === 0 ? (
         <EmptyState 
@@ -549,24 +571,33 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
       )}
     </div>
   );
-}
+});
 
 function HabitScorecard({ onComplete }) {
-  const [habits, setHabits] = useState([
-    { id: 1, name: 'Wake up', rating: null },
-    { id: 2, name: 'Check phone first thing', rating: null },
-    { id: 3, name: 'Drink coffee/tea', rating: null },
-    { id: 4, name: 'Eat breakfast', rating: null },
-    { id: 5, name: 'Shower', rating: null },
-    { id: 6, name: 'Scroll social media', rating: null },
-    { id: 7, name: 'Exercise', rating: null },
-    { id: 8, name: 'Read', rating: null },
-    { id: 9, name: 'Watch TV', rating: null },
-    { id: 10, name: 'Eat snacks', rating: null },
-    { id: 11, name: 'Work/Study', rating: null },
-    { id: 12, name: 'Go to bed', rating: null },
-  ]);
+  const [habits, setHabits] = useState(() => {
+    const saved = localStorage.getItem('scorecardHabits');
+    return saved ? JSON.parse(saved) : [
+      { id: 1, name: 'Wake up', rating: null },
+      { id: 2, name: 'Check phone first thing', rating: null },
+      { id: 3, name: 'Drink coffee/tea', rating: null },
+      { id: 4, name: 'Eat breakfast', rating: null },
+      { id: 5, name: 'Shower', rating: null },
+      { id: 6, name: 'Scroll social media', rating: null },
+      { id: 7, name: 'Exercise', rating: null },
+      { id: 8, name: 'Read', rating: null },
+      { id: 9, name: 'Watch TV', rating: null },
+      { id: 10, name: 'Eat snacks', rating: null },
+      { id: 11, name: 'Work/Study', rating: null },
+      { id: 12, name: 'Go to bed', rating: null },
+    ];
+  });
   const [customHabit, setCustomHabit] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('scorecardHabits', JSON.stringify(habits));
+  }, [habits]);
 
   const addCustomHabit = () => {
     if (customHabit.trim()) {
@@ -577,6 +608,23 @@ function HabitScorecard({ onComplete }) {
 
   const rateHabit = (id, rating) => {
     setHabits(habits.map(h => h.id === id ? { ...h, rating } : h));
+  };
+
+  const startEdit = (id, name) => {
+    setEditingId(id);
+    setEditValue(name);
+  };
+
+  const saveEdit = (id) => {
+    if (editValue.trim()) {
+      setHabits(habits.map(h => h.id === id ? { ...h, name: editValue.trim() } : h));
+    }
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const deleteHabit = (id) => {
+    setHabits(habits.filter(h => h.id !== id));
   };
 
   const allRated = habits.every(h => h.rating !== null);
@@ -598,7 +646,24 @@ function HabitScorecard({ onComplete }) {
       <div className="scorecard-list">
         {habits.map(habit => (
           <div key={habit.id} className="scorecard-item">
-            <span className="scorecard-habit-name">{habit.name}</span>
+            {editingId === habit.id ? (
+              <input
+                className="scorecard-edit-input"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={() => saveEdit(habit.id)}
+                onKeyPress={(e) => e.key === 'Enter' && saveEdit(habit.id)}
+                autoFocus
+              />
+            ) : (
+              <span 
+                className="scorecard-habit-name" 
+                onDoubleClick={() => startEdit(habit.id, habit.name)}
+                title="Double-click to edit"
+              >
+                {habit.name}
+              </span>
+            )}
             <div className="rating-buttons">
               <button 
                 className={`rating-btn good ${habit.rating === 'good' ? 'active' : ''}`}
@@ -617,6 +682,13 @@ function HabitScorecard({ onComplete }) {
                 onClick={() => rateHabit(habit.id, 'bad')}
               >
                 --
+              </button>
+              <button 
+                className="delete-scorecard-btn"
+                onClick={() => deleteHabit(habit.id)}
+                title="Delete habit"
+              >
+                ×
               </button>
             </div>
           </div>
