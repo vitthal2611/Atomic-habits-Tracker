@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFirebaseHabits } from '../hooks/useFirebaseHabits';
 import ErrorBoundary from '../components/ErrorBoundary';
-import AddHabit from '../components/AddHabit';
 import ProgressTracker from '../components/ProgressTracker';
 import Auth from '../components/Auth';
 import PlateauVisualization from '../components/PlateauVisualization';
@@ -39,6 +38,12 @@ function UnifiedAppContent() {
   const [view, setView] = useState(
     localStorage.getItem('scorecardCompleted') ? 'today' : 'scorecard'
   );
+  
+  useEffect(() => {
+    if (window.history.length > 1) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
   const [contracts, setContracts] = useState(() => {
     const saved = localStorage.getItem('habitContracts');
     return saved ? JSON.parse(saved) : [];
@@ -56,6 +61,7 @@ function UnifiedAppContent() {
     user,
     addHabit,
     deleteHabit,
+    updateHabit,
     toggleHabit,
     getHabitStats,
     getOverallStats,
@@ -111,10 +117,7 @@ function UnifiedAppContent() {
     localStorage.setItem('habitContracts', JSON.stringify(updated));
   };
 
-  const handleUpdateHabit = (id, updates) => {
-    // This would need to be implemented in useFirebaseHabits
-    console.log('Update habit:', id, updates);
-  };
+
 
   const stats = getOverallStats();
 
@@ -167,17 +170,13 @@ function UnifiedAppContent() {
           
           {view === 'today' && (
             <>
-              <NeverMissTwice 
-                habits={habits}
-                getHabitStats={getHabitStats}
-                onQuickComplete={handleQuickComplete}
-              />
               <TodayView 
                 habits={habits}
                 stats={stats}
                 getHabitStats={getHabitStats}
                 toggleHabit={toggleHabit}
                 handleDeleteHabit={handleDeleteHabit}
+                updateHabit={updateHabit}
                 showAddHabit={showAddHabit}
                 setShowAddHabit={setShowAddHabit}
                 addHabit={addHabit}
@@ -203,50 +202,95 @@ function UnifiedAppContent() {
                 />
               </div>
             ) : (
-            <div className="progress-view-container">
-              <CompoundGrowthChart daysSinceStart={avgDaysSinceStart} />
-              
-              {habits.map(habit => (
-                isMobile ? (
-                  <MobileCalendar 
-                    key={habit.id}
-                    habit={habit}
-                    getHabitStats={getHabitStats}
-                  />
-                ) : (
-                  <HabitCalendar 
-                    key={habit.id}
-                    habit={habit}
-                    getHabitStats={getHabitStats}
-                  />
-                )
-              ))}
-              
-              <div className="progress-periods">
-                <ProgressTracker 
-                  habits={habits}
-                  getHabitStats={getHabitStats}
-                  currentDate={new Date()}
-                  period="weekly"
-                />
-                <ProgressTracker 
-                  habits={habits}
-                  getHabitStats={getHabitStats}
-                  currentDate={new Date()}
-                  period="monthly"
-                />
-                <ProgressTracker 
-                  habits={habits}
-                  getHabitStats={getHabitStats}
-                  currentDate={new Date()}
-                  period="quarterly"
-                />
-                <ProgressTracker 
-                  habits={habits}
-                  getHabitStats={getHabitStats}
-                  currentDate={new Date()}
-                  period="yearly"
-                />
+            <div className="progress-view-atomic">
+              <div className="progress-hero">
+                <h2 className="progress-title">Your Identity is Changing</h2>
+                <p className="progress-subtitle">Every action is a vote for who you're becoming</p>
+              </div>
+
+              <div className="compound-effect-card">
+                <div className="compound-header">
+                  <span className="compound-icon">📈</span>
+                  <div>
+                    <h3>The Compound Effect</h3>
+                    <p>1% better every day = 37x better in a year</p>
+                  </div>
+                </div>
+                <div className="compound-stats">
+                  <div className="stat-box">
+                    <div className="stat-number">{stats.totalVotes}</div>
+                    <div className="stat-label">Total Votes Cast</div>
+                  </div>
+                  <div className="stat-box">
+                    <div className="stat-number">{stats.bestStreak}</div>
+                    <div className="stat-label">Best Streak</div>
+                  </div>
+                  <div className="stat-box">
+                    <div className="stat-number">{habits.length}</div>
+                    <div className="stat-label">Active Habits</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="habits-progress-grid">
+                {habits.map(habit => {
+                  const habitStats = getHabitStats(habit);
+                  const daysSince = Math.floor((Date.now() - new Date(habit.startDate).getTime()) / (1000 * 60 * 60 * 24));
+                  const completionRate = daysSince > 0 ? Math.round((habitStats.streak / daysSince) * 100) : 0;
+                  
+                  return (
+                    <div key={habit.id} className="habit-progress-card">
+                      <div className="habit-progress-header">
+                        <div className="habit-icon-large">{habit.icon}</div>
+                        <div className="habit-progress-info">
+                          <h4>{habit.name}</h4>
+                          <p className="identity-text">I am {habit.identity}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="progress-metrics">
+                        <div className="metric">
+                          <span className="metric-value">{habitStats.streak}</span>
+                          <span className="metric-label">Day Streak</span>
+                        </div>
+                        <div className="metric">
+                          <span className="metric-value">{completionRate}%</span>
+                          <span className="metric-label">Success Rate</span>
+                        </div>
+                        <div className="metric">
+                          <span className="metric-value">{daysSince}</span>
+                          <span className="metric-label">Days Active</span>
+                        </div>
+                      </div>
+
+                      <div className="progress-bar-wrapper">
+                        <div className="progress-bar-track">
+                          <div 
+                            className="progress-bar-fill-gradient" 
+                            style={{ width: `${completionRate}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {isMobile ? (
+                        <MobileCalendar 
+                          habit={habit}
+                          getHabitStats={getHabitStats}
+                        />
+                      ) : (
+                        <HabitCalendar 
+                          habit={habit}
+                          getHabitStats={getHabitStats}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="atomic-quote">
+                <p>"You do not rise to the level of your goals. You fall to the level of your systems."</p>
+                <span>— James Clear</span>
               </div>
             </div>
             )
@@ -281,11 +325,11 @@ function UnifiedAppContent() {
                 <>
                   <HabitLoopWithCraving 
                     habit={selectedHabitForDetails}
-                    onUpdate={handleUpdateHabit}
+                    onUpdate={updateHabit}
                   />
                   <HabitProgression 
                     habit={selectedHabitForDetails}
-                    onUpdate={handleUpdateHabit}
+                    onUpdate={updateHabit}
                   />
                 </>
               )}
@@ -304,7 +348,7 @@ function UnifiedAppContent() {
               <ImprovedGoldilocksRule 
                 habits={habits}
                 getHabitStats={getHabitStats}
-                onUpdateHabit={handleUpdateHabit}
+                onUpdateHabit={updateHabit}
               />
               <WeeklyReview 
                 habits={habits}
@@ -328,7 +372,7 @@ function UnifiedAppContent() {
               />
               <EnvironmentDesign 
                 habits={habits}
-                onUpdateHabit={handleUpdateHabit}
+                onUpdateHabit={updateHabit}
               />
               <TemptationBundling 
                 habits={habits}
@@ -403,29 +447,16 @@ function Header({ view, setView, habits }) {
   );
 }
 
-function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabit, showAddHabit, setShowAddHabit, addHabit, loading, allHabits }) {
-  const today = new Date();
+function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabit, updateHabit, showAddHabit, setShowAddHabit, addHabit, loading, allHabits }) {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const today = selectedDate;
   const todayHabits = habits.filter(h => new Date(h.startDate) <= today);
   const completionPercentage = stats.totalHabits > 0 ? (stats.completedToday / stats.totalHabits) * 100 : 0;
   
-  const groupedHabits = {
-    morning: todayHabits.filter(h => h.cue?.toLowerCase().includes('morning') || h.cue?.toLowerCase().includes('wake')),
-    afternoon: todayHabits.filter(h => h.cue?.toLowerCase().includes('afternoon') || h.cue?.toLowerCase().includes('lunch')),
-    evening: todayHabits.filter(h => h.cue?.toLowerCase().includes('evening') || h.cue?.toLowerCase().includes('night')),
-    anytime: todayHabits.filter(h => {
-      const cue = h.cue?.toLowerCase() || '';
-      return !cue.includes('morning') && !cue.includes('wake') && 
-             !cue.includes('afternoon') && !cue.includes('lunch') &&
-             !cue.includes('evening') && !cue.includes('night');
-    })
-  };
-
-  const missedYesterday = todayHabits.filter(h => {
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const yesterdayStats = getHabitStats(h, yesterday);
-    const todayStats = getHabitStats(h, today);
-    return !yesterdayStats.isCompletedToday && todayStats.streak === 0;
+  const sortedHabits = todayHabits.sort((a, b) => {
+    const timeA = a.time || '23:59';
+    const timeB = b.time || '23:59';
+    return timeA.localeCompare(timeB);
   });
 
   if (loading) {
@@ -452,38 +483,31 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
           <span className="progress-label">Today's Progress</span>
           <span className="progress-count">{stats.completedToday}/{stats.totalHabits}</span>
         </div>
-      </div>
-
-      <div className="today-header">
-        <h2>{today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
         
-        {stats.bestStreak >= 7 && (
-          <StreakVisualization streak={stats.currentStreak || 0} bestStreak={stats.bestStreak} />
-        )}
-        
-        <div className="identity-votes">
-          <div className="votes-count">
-            <span className="votes-num">{stats.completedToday}/{stats.totalHabits}</span>
-            <span className="votes-label">Identity Votes Cast</span>
-          </div>
-          <p className="vote-message">
-            {stats.completedToday === 0 && "🎯 Cast your first vote today"}
-            {stats.completedToday > 0 && stats.completedToday < stats.totalHabits && `🔥 ${stats.completedToday} votes for who you're becoming. Keep going!`}
-            {stats.completedToday === stats.totalHabits && "🏆 Perfect day! Every vote counts."}
-          </p>
+        <div className="date-navigation">
+          <button 
+            className="date-nav-btn"
+            onClick={() => setSelectedDate(new Date(selectedDate.getTime() - 86400000))}
+            aria-label="Previous day"
+          >
+            ←
+          </button>
+          <h2>{today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
+          <button 
+            className="date-nav-btn"
+            onClick={() => setSelectedDate(new Date(selectedDate.getTime() + 86400000))}
+            aria-label="Next day"
+          >
+            →
+          </button>
         </div>
-        
-        <button className="btn btn-primary" onClick={() => setShowAddHabit(!showAddHabit)}>
-          {showAddHabit ? '✕ Close' : '+ Add Habit'}
+      </div>
+      
+      <div className="today-actions">
+        <button className="btn-add-habit" onClick={() => setShowAddHabit(!showAddHabit)}>
+          {showAddHabit ? '✕' : '+'}
         </button>
       </div>
-
-      {missedYesterday.length > 0 && (
-        <div className="never-miss-twice">
-          <h3>⚠️ Never Miss Twice</h3>
-          <p>You missed {missedYesterday.length} habit{missedYesterday.length > 1 ? 's' : ''} yesterday. Don't miss today!</p>
-        </div>
-      )}
 
       {showAddHabit && (
         <div className="add-habit-inline">
@@ -507,61 +531,22 @@ function TodayView({ habits, stats, getHabitStats, toggleHabit, handleDeleteHabi
           onAction={() => setShowAddHabit(true)}
         />
       ) : (
-        <>
-          {Object.entries(groupedHabits).map(([time, timeHabits]) => {
-            if (timeHabits.length === 0) return null;
-            const timeIcons = {
-              morning: '🌅',
-              afternoon: '☀️',
-              evening: '🌙',
-              anytime: '⏰'
-            };
-            
+        <div className="habit-checklist">
+          {sortedHabits.filter(habit => !getHabitStats(habit, today).isCompletedToday).map(habit => {
+            const habitStats = getHabitStats(habit, today);
             return (
-              <div key={time} className="time-section-improved">
-                <div className="time-section-header">
-                  <span className="time-icon">{timeIcons[time]}</span>
-                  <h3 className="time-title">{time}</h3>
-                </div>
-                <div className="habit-checklist">
-                  {timeHabits.map(habit => {
-                    const habitStats = getHabitStats(habit, today);
-                    return (
-                      <ImprovedHabitCard 
-                        key={habit.id}
-                        habit={habit}
-                        stats={habitStats}
-                        onToggle={() => toggleHabit(habit.id, today)}
-                        onDelete={() => handleDeleteHabit(habit.id)}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
+              <ImprovedHabitCard 
+                key={habit.id}
+                habit={habit}
+                stats={habitStats}
+                onToggle={() => toggleHabit(habit.id, today)}
+                onDelete={() => handleDeleteHabit(habit.id)}
+                onUpdate={updateHabit}
+              />
             );
           })}
-        </>
+        </div>
       )}
-    </div>
-  );
-}
-
-function HabitCheckItem({ habit, stats, onToggle, onDelete }) {
-  return (
-    <div className={`habit-check-item ${stats.isCompletedToday ? 'checked' : ''}`}>
-      <button className="checkbox" onClick={onToggle}>
-        {stats.isCompletedToday ? '✓' : ''}
-      </button>
-      <div className="habit-check-content">
-        <div className="habit-check-name">{habit.icon} {habit.name}</div>
-        <div className="two-minute-start">⚡ Start: {habit.twoMinuteVersion}</div>
-        <div className="habit-check-identity">I am {habit.identity}</div>
-        <div className="habit-check-cue">{habit.cue}</div>
-        {habit.visualCue && <div className="visual-cue">👁️ {habit.visualCue}</div>}
-        {habit.accountabilityPartner && <div className="accountability">🤝 {habit.accountabilityPartner}</div>}
-        {stats.streak > 0 && <div className="habit-check-streak">🔥 {stats.streak} day streak</div>}
-      </div>
-      <button className="delete-small" onClick={onDelete}>×</button>
     </div>
   );
 }

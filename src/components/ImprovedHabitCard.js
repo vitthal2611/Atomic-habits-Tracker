@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import './ImprovedTodayView.css';
 
-const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete }) => {
+const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete, onUpdate }) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(habit);
 
   const handleToggle = () => {
     if (!stats.isCompletedToday) {
@@ -28,68 +30,101 @@ const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete }) => {
     <div className={`habit-card-improved ${stats.isCompletedToday ? 'completed' : ''} ${justCompleted ? 'just-completed' : ''}`}>
       {showConfetti && <ConfettiEffect />}
       
-      <button className="delete-button-subtle" onClick={handleDelete} aria-label="Delete habit">
-        ×
-      </button>
+      <div className="habit-card-actions">
+        <button className="edit-button-subtle" onClick={() => setIsEditing(!isEditing)} aria-label="Edit habit">
+          {isEditing ? '✕' : '✏️'}
+        </button>
+        <button className="delete-button-subtle" onClick={handleDelete} aria-label="Delete habit">
+          ×
+        </button>
+      </div>
 
-      <div className="habit-card-header">
-        <div className="habit-main-info">
-          <h3 className="habit-name-large">
-            {habit.icon} {habit.name}
-          </h3>
-          <p className="habit-identity-prominent">
-            I am {habit.identity}
-          </p>
+      {isEditing ? (
+        <div className="habit-edit-mode">
+          <input
+            className="edit-input-large"
+            value={editData.name}
+            onChange={(e) => setEditData({...editData, name: e.target.value})}
+            placeholder="Habit name"
+          />
+          <input
+            className="edit-input"
+            value={editData.identity}
+            onChange={(e) => setEditData({...editData, identity: e.target.value})}
+            placeholder="Who does this make you?"
+          />
+          <input
+            className="edit-input"
+            value={editData.twoMinuteVersion}
+            onChange={(e) => setEditData({...editData, twoMinuteVersion: e.target.value})}
+            placeholder="2-minute version"
+          />
+          <input
+            className="edit-input"
+            value={editData.cue || ''}
+            onChange={(e) => setEditData({...editData, cue: e.target.value})}
+            placeholder="When & where?"
+          />
+          <input
+            type="time"
+            className="edit-input"
+            value={editData.time || ''}
+            onChange={(e) => setEditData({...editData, time: e.target.value})}
+          />
         </div>
-        
-        {stats.streak > 0 && (
-          <div className="habit-streak-badge">
-            🔥 {stats.streak}
+      ) : (
+        <>
+          <div className="identity-first">
+            <div className="identity-badge">I am {habit.identity}</div>
+            {stats.streak > 0 && <div className="streak-mini">🔥 {stats.streak} day streak</div>}
           </div>
-        )}
-      </div>
 
-      <div className="two-minute-prominent">
-        <div className="two-minute-icon">⚡</div>
-        <div className="two-minute-text">
-          <div className="two-minute-label">Start Here</div>
-          <div className="two-minute-action">{habit.twoMinuteVersion}</div>
-        </div>
-      </div>
+          <div className="habit-action">
+            <div className="action-icon">{habit.icon}</div>
+            <div className="action-details">
+              <h3 className="action-name">{habit.name}</h3>
+              <div className="action-cue">{habit.cue}</div>
+            </div>
+            {habit.time && (
+              <div className="action-time">
+                {new Date('2000-01-01 ' + habit.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+              </div>
+            )}
+          </div>
 
-      <div className="habit-metadata">
-        {habit.cue && (
-          <div className="metadata-item">
-            <span>🔗</span>
-            <span>{habit.cue}</span>
+          <div className="two-minute-rule">
+            <span className="rule-label">Start with:</span>
+            <span className="rule-action">{habit.twoMinuteVersion}</span>
           </div>
-        )}
-        {habit.visualCue && (
-          <div className="metadata-item">
-            <span>👁️</span>
-            <span>{habit.visualCue}</span>
-          </div>
-        )}
-        {habit.accountabilityPartner && (
-          <div className="metadata-item">
-            <span>🤝</span>
-            <span>{habit.accountabilityPartner}</span>
-          </div>
-        )}
-      </div>
+        </>
+      )}
 
-      <button
-        className={`cast-vote-button ${stats.isCompletedToday ? 'completed' : 'uncompleted'}`}
-        onClick={handleToggle}
-        aria-label={stats.isCompletedToday ? 'Mark as incomplete' : 'Cast your identity vote'}
-      >
-        <span className="vote-button-icon">
-          {stats.isCompletedToday ? '✅' : '🗳️'}
-        </span>
-        <span className="vote-button-text">
-          {stats.isCompletedToday ? 'Vote Cast!' : 'Cast Your Vote'}
-        </span>
-      </button>
+      {isEditing ? (
+        <button
+          className="cast-vote-button uncompleted"
+          onClick={() => {
+            onUpdate && onUpdate(habit.id, editData);
+            setIsEditing(false);
+          }}
+        >
+          <span className="vote-button-icon">💾</span>
+          <span className="vote-button-text">Save Changes</span>
+        </button>
+      ) : (
+        <button
+          className={`cast-vote-button ${stats.isCompletedToday ? 'completed' : 'uncompleted'}`}
+          onClick={handleToggle}
+          disabled={stats.isCompletedToday}
+          aria-label={stats.isCompletedToday ? 'Vote already cast' : 'Cast your identity vote'}
+        >
+          <span className="vote-button-icon">
+            {stats.isCompletedToday ? '✅' : '🗳️'}
+          </span>
+          <span className="vote-button-text">
+            {stats.isCompletedToday ? 'Vote Cast!' : 'Cast Your Vote'}
+          </span>
+        </button>
+      )}
     </div>
   );
 };

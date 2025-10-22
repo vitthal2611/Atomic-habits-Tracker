@@ -82,6 +82,15 @@ export const useFirebaseHabits = () => {
     }
   }, [user]);
 
+  const updateHabit = useCallback(async (id, updates) => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'habits', id), updates, { merge: true });
+    } catch (error) {
+      setError(error.message);
+    }
+  }, [user]);
+
   const toggleHabit = useCallback(async (id, date = null) => {
     if (!user) return;
     
@@ -168,6 +177,7 @@ export const useFirebaseHabits = () => {
     user,
     addHabit,
     deleteHabit,
+    updateHabit,
     toggleHabit,
     getHabitStats,
     getOverallStats,
