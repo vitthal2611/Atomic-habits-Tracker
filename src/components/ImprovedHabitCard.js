@@ -131,8 +131,7 @@ const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete, onUpdate }) => {
         <button
           className={`cast-vote-button ${stats.isCompletedToday ? 'completed' : 'uncompleted'}`}
           onClick={handleToggle}
-          disabled={stats.isCompletedToday}
-          aria-label={stats.isCompletedToday ? 'Vote already cast' : 'Cast your identity vote'}
+          aria-label={stats.isCompletedToday ? 'Remove vote' : 'Cast your identity vote'}
         >
           <span className="vote-button-icon">
             {stats.isCompletedToday ? '✅' : '🗳️'}

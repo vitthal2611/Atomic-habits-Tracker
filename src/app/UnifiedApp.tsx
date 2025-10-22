@@ -238,8 +238,10 @@ function UnifiedAppContent() {
               <div className="habits-progress-grid">
                 {habits.map(habit => {
                   const habitStats = getHabitStats(habit);
-                  const daysSince = Math.floor((Date.now() - new Date(habit.startDate).getTime()) / (1000 * 60 * 60 * 24));
-                  const completionRate = daysSince > 0 ? Math.round((habitStats.streak / daysSince) * 100) : 0;
+                  const daysSince = Math.floor((Date.now() - new Date(habit.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                  const uniqueCompletedDays = new Set(habit.daily?.filter(d => d.completed).map(d => d.key)).size || 0;
+                  const totalCompleted = Math.min(uniqueCompletedDays, daysSince);
+                  const completionRate = daysSince > 0 ? Math.round((totalCompleted / daysSince) * 100) : 0;
                   
                   return (
                     <div key={habit.id} className="habit-progress-card">
@@ -253,39 +255,67 @@ function UnifiedAppContent() {
                       
                       <div className="progress-metrics">
                         <div className="metric">
-                          <span className="metric-value">{habitStats.streak}</span>
-                          <span className="metric-label">Day Streak</span>
+                          <span className="metric-value">{totalCompleted}</span>
+                          <span className="metric-label">Completed</span>
+                        </div>
+                        <div className="metric">
+                          <span className="metric-value">{daysSince - totalCompleted}</span>
+                          <span className="metric-label">Missed</span>
                         </div>
                         <div className="metric">
                           <span className="metric-value">{completionRate}%</span>
                           <span className="metric-label">Success Rate</span>
                         </div>
-                        <div className="metric">
-                          <span className="metric-value">{daysSince}</span>
-                          <span className="metric-label">Days Active</span>
-                        </div>
                       </div>
 
-                      <div className="progress-bar-wrapper">
-                        <div className="progress-bar-track">
-                          <div 
-                            className="progress-bar-fill-gradient" 
-                            style={{ width: `${completionRate}%` }}
+                      <div className="pie-chart-container">
+                        <svg viewBox="0 0 100 100" className="pie-chart">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            fill="none"
+                            stroke="#fee2e2"
+                            strokeWidth="20"
                           />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            fill="none"
+                            stroke="url(#gradient)"
+                            strokeWidth="20"
+                            strokeDasharray={`${completionRate * 2.51} ${251 - completionRate * 2.51}`}
+                            strokeDashoffset="62.75"
+                            transform="rotate(-90 50 50)"
+                          />
+                          <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#667eea" />
+                              <stop offset="100%" stopColor="#764ba2" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <div className="pie-chart-label">
+                          <div className="pie-percentage">{completionRate}%</div>
+                          <div className="pie-text">Complete</div>
                         </div>
                       </div>
-
-                      {isMobile ? (
-                        <MobileCalendar 
-                          habit={habit}
-                          getHabitStats={getHabitStats}
-                        />
-                      ) : (
-                        <HabitCalendar 
-                          habit={habit}
-                          getHabitStats={getHabitStats}
-                        />
-                      )}
+                      
+                      <div className="completion-stats">
+                        <div className="stat-item-small completed">
+                          <span className="stat-dot"></span>
+                          <span>Completed: {totalCompleted} days</span>
+                        </div>
+                        <div className="stat-item-small missed">
+                          <span className="stat-dot"></span>
+                          <span>Missed: {daysSince - totalCompleted} days</span>
+                        </div>
+                      </div>
+                      
+                      <div className="calculation-formula">
+                        <span className="formula-text">{totalCompleted} ÷ {daysSince} × 100 = {completionRate}%</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -454,10 +484,14 @@ const TodayView = React.memo(function TodayView({ habits, stats, getHabitStats, 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const today = selectedDate;
   
-  const todayHabits = useMemo(() => 
-    habits.filter(h => new Date(h.startDate) <= today),
-    [habits, today]
-  );
+  const todayHabits = useMemo(() => {
+    const selectedDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return habits.filter(h => {
+      const habitStartDate = new Date(h.startDate);
+      const habitStartDateOnly = new Date(habitStartDate.getFullYear(), habitStartDate.getMonth(), habitStartDate.getDate());
+      return habitStartDateOnly <= selectedDateOnly;
+    });
+  }, [habits, today]);
   
   const dateStats = useMemo(() => {
     const completed = todayHabits.filter(h => getHabitStats(h, today).isCompletedToday).length;
@@ -552,9 +586,14 @@ const TodayView = React.memo(function TodayView({ habits, stats, getHabitStats, 
           action="+ Create Your First Habit"
           onAction={() => setShowAddHabit(true)}
         />
+      ) : sortedHabits.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
+          <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>📅 No habits started yet on this date</p>
+          <p style={{ fontSize: '0.875rem' }}>Habits will appear here once their start date arrives</p>
+        </div>
       ) : (
         <div className="habit-checklist">
-          {sortedHabits.filter(habit => !getHabitStats(habit, today).isCompletedToday).map(habit => {
+          {sortedHabits.map(habit => {
             const habitStats = getHabitStats(habit, today);
             return (
               <ImprovedHabitCard 
