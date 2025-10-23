@@ -67,6 +67,17 @@ body {
   border-color: white;
 }
 
+.logout-btn {
+  margin-left: auto;
+  padding: 0.75rem 1.5rem !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+}
+
 /* Habit Scorecard */
 .scorecard-container {
   background: white;

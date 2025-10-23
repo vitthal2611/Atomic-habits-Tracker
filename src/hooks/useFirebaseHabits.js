@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { collection, doc, setDoc, deleteDoc, onSnapshot, query, where } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 
 export const useFirebaseHabits = () => {
@@ -172,6 +173,14 @@ export const useFirebaseHabits = () => {
     }
   }, [habits, getHabitStats]);
 
+  const logout = useCallback(async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      setError(error.message);
+    }
+  }, []);
+
   return {
     habits,
     loading,
@@ -183,6 +192,7 @@ export const useFirebaseHabits = () => {
     toggleHabit,
     getHabitStats,
     getOverallStats,
+    logout,
     clearError: () => setError(null)
   };
 };

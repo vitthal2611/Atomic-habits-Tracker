@@ -4,6 +4,7 @@ import './BottomNavigation.css';
 const BottomNavigation = ({ currentView, onViewChange }) => {
   const tabs = [
     { id: 'today', icon: '🏠', label: 'Today' },
+    { id: 'tasks', icon: '✅', label: 'Tasks' },
     { id: 'progress', icon: '📊', label: 'Progress' },
     { id: 'insights', icon: '💡', label: 'Insights' },
     { id: 'tools', icon: '🛠️', label: 'Tools' }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useFirebaseHabits } from '../hooks/useFirebaseHabits';
 import ErrorBoundary from '../components/ErrorBoundary';
-import ProgressTracker from '../components/ProgressTracker';
 import Auth from '../components/Auth';
 import PlateauVisualization from '../components/PlateauVisualization';
 import WeeklyReview from '../components/WeeklyReview';
@@ -9,19 +8,15 @@ import EnvironmentDesign from '../components/EnvironmentDesign';
 import HabitContract from '../components/HabitContract';
 import TemptationBundling from '../components/TemptationBundling';
 import OnboardingTips from '../components/OnboardingTips';
-import CompoundGrowthChart from '../components/CompoundGrowthChart';
-import HabitCalendar from '../components/HabitCalendar';
 import HabitStackingSuggestions from '../components/HabitStackingSuggestions';
-import NeverMissTwice from '../components/NeverMissTwice';
 import ImprovedGoldilocksRule from '../components/ImprovedGoldilocksRule';
 import HabitLoopWithCraving from '../components/HabitLoopWithCraving';
 import MonthlyScorecard from '../components/MonthlyScorecard';
 import HabitProgression from '../components/HabitProgression';
 import PatternInsights from '../components/PatternInsights';
 import ImprovedHabitCard from '../components/ImprovedHabitCard';
-import StreakVisualization from '../components/StreakVisualization';
+import EisenhowerMatrix from '../components/EisenhowerMatrix';
 import { SkeletonList, EmptyState, ErrorState } from '../components/LoadingStates';
-import MobileCalendar from '../components/MobileCalendar';
 import FormWizard from '../components/FormWizard';
 import BottomNavigation from '../components/BottomNavigation';
 import OnboardingTutorial from '../components/OnboardingTutorial';
@@ -65,6 +60,7 @@ function UnifiedAppContent() {
     toggleHabit,
     getHabitStats,
     getOverallStats,
+    logout,
     clearError
   } = useFirebaseHabits();
 
@@ -127,14 +123,6 @@ function UnifiedAppContent() {
     [habits]
   );
 
-  const handleQuickComplete = useCallback((habitId) => {
-    const habit = habits.find(h => h.id === habitId);
-    toggleHabit(habitId, new Date());
-    if (habit && toast) {
-      toast.success(`Vote cast for "${habit.name}"!`);
-    }
-  }, [habits, toggleHabit, toast]);
-
   if (!user) {
     return <Auth />;
   }
@@ -161,7 +149,7 @@ function UnifiedAppContent() {
           habitCount={habits.length}
           daysSinceStart={avgDaysSinceStart}
         />
-        <Header view={view} setView={setView} habits={habits} />
+        <Header view={view} setView={setView} habits={habits} onLogout={logout} />
         
         <main>
           {view === 'scorecard' && (
@@ -237,7 +225,6 @@ function UnifiedAppContent() {
 
               <div className="habits-progress-grid">
                 {habits.map(habit => {
-                  const habitStats = getHabitStats(habit);
                   const daysSince = Math.floor((Date.now() - new Date(habit.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
                   const uniqueCompletedDays = new Set(habit.daily?.filter(d => d.completed).map(d => d.key)).size || 0;
                   const totalCompleted = Math.min(uniqueCompletedDays, daysSince);
@@ -391,6 +378,8 @@ function UnifiedAppContent() {
             )
           )}
           
+          {view === 'tasks' && <EisenhowerMatrix />}
+          
           {view === 'tools' && (
             loading ? (
               <div className="tools-container">
@@ -440,7 +429,7 @@ export function UnifiedApp() {
   );
 }
 
-function Header({ view, setView, habits }) {
+function Header({ view, setView, habits, onLogout }) {
   const showInsightsBadge = habits.length > 0 && habits.some(h => {
     const daysSince = Math.floor((Date.now() - new Date(h.startDate).getTime()) / (1000 * 60 * 60 * 24));
     return daysSince >= 10 && daysSince < 21;
@@ -456,6 +445,12 @@ function Header({ view, setView, habits }) {
           onClick={() => setView('today')}
         >
           Today
+        </button>
+        <button 
+          className={view === 'tasks' ? 'active' : ''}
+          onClick={() => setView('tasks')}
+        >
+          Tasks
         </button>
         <button 
           className={view === 'progress' ? 'active' : ''}
@@ -474,6 +469,13 @@ function Header({ view, setView, habits }) {
           onClick={() => setView('tools')}
         >
           Tools
+        </button>
+        <button 
+          className="logout-btn"
+          onClick={onLogout}
+          title="Logout"
+        >
+          🚪
         </button>
       </nav>
     </header>
