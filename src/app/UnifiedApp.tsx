@@ -30,9 +30,7 @@ import '../components/ImprovedTodayView.css';
 
 function UnifiedAppContent() {
   const toast = useToast();
-  const [view, setView] = useState(
-    localStorage.getItem('scorecardCompleted') ? 'today' : 'scorecard'
-  );
+  const [view, setView] = useState('today');
   
   useEffect(() => {
     if (window.history.length > 1) {
@@ -152,33 +150,28 @@ function UnifiedAppContent() {
         <Header view={view} setView={setView} habits={habits} onLogout={logout} />
         
         <main>
-          {view === 'scorecard' && (
-            <HabitScorecard onComplete={() => {
-              localStorage.setItem('scorecardCompleted', 'true');
-              setView('today');
-            }} />
-          )}
+          <div style={{ display: view === 'scorecard' ? 'block' : 'none' }}>
+            <HabitScorecard onComplete={() => setView('today')} />
+          </div>
           
-          {view === 'today' && (
-            <>
-              <TodayView 
-                habits={habits}
-                stats={stats}
-                getHabitStats={getHabitStats}
-                toggleHabit={toggleHabit}
-                handleDeleteHabit={handleDeleteHabit}
-                updateHabit={updateHabit}
-                showAddHabit={showAddHabit}
-                setShowAddHabit={setShowAddHabit}
-                addHabit={addHabit}
-                loading={loading}
-                allHabits={habits}
-              />
-            </>
-          )}
+          <div style={{ display: view === 'today' ? 'block' : 'none' }}>
+            <TodayView 
+              habits={habits}
+              stats={stats}
+              getHabitStats={getHabitStats}
+              toggleHabit={toggleHabit}
+              handleDeleteHabit={handleDeleteHabit}
+              updateHabit={updateHabit}
+              showAddHabit={showAddHabit}
+              setShowAddHabit={setShowAddHabit}
+              addHabit={addHabit}
+              loading={loading}
+              allHabits={habits}
+            />
+          </div>
           
-          {view === 'progress' && (
-            loading ? (
+          <div style={{ display: view === 'progress' ? 'block' : 'none' }}>
+            {loading ? (
               <div className="progress-view-container">
                 <SkeletonList count={2} />
               </div>
@@ -313,11 +306,11 @@ function UnifiedAppContent() {
                 <span>— James Clear</span>
               </div>
             </div>
-            )
-          )}
+            )}
+          </div>
           
-          {view === 'insights' && (
-            loading ? (
+          <div style={{ display: view === 'insights' ? 'block' : 'none' }}>
+            {loading ? (
               <div className="insights-container">
                 <SkeletonList count={2} />
               </div>
@@ -375,13 +368,15 @@ function UnifiedAppContent() {
                 getHabitStats={getHabitStats}
               />
             </div>
-            )
-          )}
+            )}
+          </div>
           
-          {view === 'tasks' && <EisenhowerMatrix />}
+          <div style={{ display: view === 'tasks' ? 'block' : 'none' }}>
+            <EisenhowerMatrix />
+          </div>
           
-          {view === 'tools' && (
-            loading ? (
+          <div style={{ display: view === 'tools' ? 'block' : 'none' }}>
+            {loading ? (
               <div className="tools-container">
                 <SkeletonList count={2} />
               </div>
@@ -404,8 +399,8 @@ function UnifiedAppContent() {
                 onSaveContract={handleSaveContract}
               />
             </div>
-            )
-          )}
+            )}
+          </div>
         </main>
         
         {isMobile && (
@@ -445,6 +440,12 @@ function Header({ view, setView, habits, onLogout }) {
           onClick={() => setView('today')}
         >
           Today
+        </button>
+        <button 
+          className={view === 'scorecard' ? 'active' : ''}
+          onClick={() => setView('scorecard')}
+        >
+          Scorecard
         </button>
         <button 
           className={view === 'tasks' ? 'active' : ''}
@@ -558,6 +559,11 @@ const TodayView = React.memo(function TodayView({ habits, stats, getHabitStats, 
         <div className="progress-stats">
           <span className="progress-label">{selectedDate.toDateString() === new Date().toDateString() ? "Today's Progress" : "Progress"}</span>
           <span className="progress-count">{dateStats.completedToday}/{dateStats.totalHabits}</span>
+          {dateStats.completedToday === dateStats.totalHabits && dateStats.totalHabits > 0 && (
+            <div className="perfect-day-badge">
+              🎆 Perfect Day!
+            </div>
+          )}
         </div>
       </div>
       
@@ -594,21 +600,53 @@ const TodayView = React.memo(function TodayView({ habits, stats, getHabitStats, 
           <p style={{ fontSize: '0.875rem' }}>Habits will appear here once their start date arrives</p>
         </div>
       ) : (
-        <div className="habit-checklist">
-          {sortedHabits.map(habit => {
-            const habitStats = getHabitStats(habit, today);
-            return (
-              <ImprovedHabitCard 
-                key={habit.id}
-                habit={habit}
-                stats={habitStats}
-                onToggle={() => toggleHabit(habit.id, today)}
-                onDelete={() => handleDeleteHabit(habit.id)}
-                onUpdate={updateHabit}
-              />
-            );
-          })}
-        </div>
+        <>
+          {/* Uncompleted Habits */}
+          <div className="habit-checklist">
+            {sortedHabits.filter(habit => !getHabitStats(habit, today).isCompletedToday).map(habit => {
+              const habitStats = getHabitStats(habit, today);
+              return (
+                <ImprovedHabitCard 
+                  key={habit.id}
+                  habit={habit}
+                  stats={habitStats}
+                  onToggle={() => toggleHabit(habit.id, today)}
+                  onDelete={() => handleDeleteHabit(habit.id)}
+                  onUpdate={updateHabit}
+                  allHabits={allHabits}
+                />
+              );
+            })}
+          </div>
+
+          {/* Completed Habits Section */}
+          {sortedHabits.filter(habit => getHabitStats(habit, today).isCompletedToday).length > 0 && (
+            <div className="completed-habits-section">
+              <div className="completed-section-header">
+                <h3 className="completed-title">
+                  ✅ Completed ({sortedHabits.filter(habit => getHabitStats(habit, today).isCompletedToday).length})
+                </h3>
+                <div className="celebration-text">Great work! 🎉</div>
+              </div>
+              <div className="completed-habits-list">
+                {sortedHabits.filter(habit => getHabitStats(habit, today).isCompletedToday).map(habit => {
+                  const habitStats = getHabitStats(habit, today);
+                  return (
+                    <ImprovedHabitCard 
+                      key={habit.id}
+                      habit={habit}
+                      stats={habitStats}
+                      onToggle={() => toggleHabit(habit.id, today)}
+                      onDelete={() => handleDeleteHabit(habit.id)}
+                      onUpdate={updateHabit}
+                      allHabits={allHabits}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

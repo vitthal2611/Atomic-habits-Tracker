@@ -6,12 +6,17 @@ const FormWizard = ({ onComplete, habits, loading }) => {
   const scorecardHabits = JSON.parse(localStorage.getItem('scorecardHabits') || '[]');
   const [step, setStep] = useState(1);
   
+  // Filter out habits that are already linked
+  const usedHabits = new Set(habits?.map(h => h.afterHabit).filter(Boolean) || []);
+  const availableHabits = scorecardHabits.filter(h => !usedHabits.has(h.name));
+  
   const validationRules = {
     name: { required: true, minLength: 2, message: 'Habit name must be at least 2 characters' },
     identity: { required: true, minLength: 2, message: 'Identity must be at least 2 characters' },
     time: { required: true, message: 'Time is required' },
     location: { required: true, minLength: 2, message: 'Location is required' },
-    twoMinuteVersion: { required: true, minLength: 2, message: '2-minute version is required' }
+    twoMinuteVersion: { required: true, minLength: 2, message: '2-minute version is required' },
+    afterHabit: { required: true, message: 'Please select an existing habit to stack after' }
   };
   
   const { values: formData, errors, touched, handleChange, handleBlur, validateAll, setValues } = useFormValidation({
@@ -34,7 +39,8 @@ const FormWizard = ({ onComplete, habits, loading }) => {
       1: ['name'],
       2: ['identity'],
       3: ['time', 'location'],
-      4: ['twoMinuteVersion']
+      4: ['twoMinuteVersion'],
+      5: ['afterHabit']
     }[step];
     
     if (fieldsToValidate) {
@@ -55,6 +61,11 @@ const FormWizard = ({ onComplete, habits, loading }) => {
   const handleSubmit = () => {
     if (!validateAll()) return;
     const cue = `${formData.afterHabit ? `After ${formData.afterHabit}, ` : ''}I will ${formData.name} at ${formData.time} in ${formData.location}`;
+    
+    // Add new habit to scorecard list
+    const updatedScorecard = [...scorecardHabits, { id: Date.now(), name: formData.name, rating: 'good' }];
+    localStorage.setItem('scorecardHabits', JSON.stringify(updatedScorecard));
+    
     onComplete({ ...formData, cue, frequency: 'daily', icon: '⭐' });
   };
 
@@ -64,7 +75,7 @@ const FormWizard = ({ onComplete, habits, loading }) => {
       case 2: return formData.identity.trim();
       case 3: return formData.time && formData.location.trim();
       case 4: return formData.twoMinuteVersion.trim();
-      case 5: return true;
+      case 5: return formData.afterHabit.trim();
       default: return false;
     }
   };
@@ -235,24 +246,18 @@ const FormWizard = ({ onComplete, habits, loading }) => {
               </div>
             </div>
             
-            <div className="optional-section">
-              <h3>Optional (Recommended)</h3>
-              <div className="form-group-wizard">
-                <label>Stack after existing habit</label>
-                <select
-                  className="wizard-input"
-                  value={formData.afterHabit}
-                  onChange={(e) => handleChange('afterHabit', e.target.value)}
-                >
-                  <option value="">No stacking</option>
-                  {habits?.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
-                  {scorecardHabits.length > 0 && (
-                    <optgroup label="Daily Routine Habits">
-                      {scorecardHabits.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
-                    </optgroup>
-                  )}
-                </select>
-              </div>
+            <div className="form-group-wizard">
+              <label>Stack after existing habit *</label>
+              <select
+                className={`wizard-input ${touched.afterHabit && errors.afterHabit ? 'error' : ''}`}
+                value={formData.afterHabit}
+                onChange={(e) => handleChange('afterHabit', e.target.value)}
+                onBlur={() => handleBlur('afterHabit')}
+              >
+                <option value="">Select a habit...</option>
+                {availableHabits.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
+              </select>
+              {touched.afterHabit && errors.afterHabit && <span className="form-error">{errors.afterHabit}</span>}
             </div>
           </div>
         )}

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
+import EditHabitWizard from './EditHabitWizard';
 import './ImprovedTodayView.css';
 
-const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete, onUpdate }) => {
+const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete, onUpdate, allHabits }) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(habit);
+  const [showEditWizard, setShowEditWizard] = useState(false);
 
   const handleToggle = () => {
     if (!stats.isCompletedToday) {
@@ -31,49 +31,15 @@ const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete, onUpdate }) => {
       {showConfetti && <ConfettiEffect />}
       
       <div className="habit-card-actions">
-        <button className="edit-button-subtle" onClick={() => setIsEditing(!isEditing)} aria-label="Edit habit">
-          {isEditing ? '✕' : '✏️'}
+        <button className="edit-button-subtle" onClick={() => setShowEditWizard(true)} aria-label="Edit habit">
+          ✏️
         </button>
         <button className="delete-button-subtle" onClick={handleDelete} aria-label="Delete habit">
           ×
         </button>
       </div>
 
-      {isEditing ? (
-        <div className="habit-edit-mode">
-          <input
-            className="edit-input-large"
-            value={editData.name}
-            onChange={(e) => setEditData({...editData, name: e.target.value})}
-            placeholder="Habit name"
-          />
-          <input
-            className="edit-input"
-            value={editData.identity}
-            onChange={(e) => setEditData({...editData, identity: e.target.value})}
-            placeholder="Who does this make you?"
-          />
-          <input
-            className="edit-input"
-            value={editData.twoMinuteVersion}
-            onChange={(e) => setEditData({...editData, twoMinuteVersion: e.target.value})}
-            placeholder="2-minute version"
-          />
-          <input
-            className="edit-input"
-            value={editData.cue || ''}
-            onChange={(e) => setEditData({...editData, cue: e.target.value})}
-            placeholder="When & where?"
-          />
-          <input
-            type="time"
-            className="edit-input"
-            value={editData.time || ''}
-            onChange={(e) => setEditData({...editData, time: e.target.value})}
-          />
-        </div>
-      ) : (
-        <>
+      <>
           <div className="identity-first">
             <div className="identity-badge">I am {habit.identity}</div>
             {stats.streak > 0 && <div className="streak-mini">🔥 {stats.streak} day streak</div>}
@@ -114,32 +80,30 @@ const ImprovedHabitCard = ({ habit, stats, onToggle, onDelete, onUpdate }) => {
             </div>
           )}
         </>
-      )}
 
-      {isEditing ? (
-        <button
-          className="cast-vote-button uncompleted"
-          onClick={() => {
-            onUpdate && onUpdate(habit.id, editData);
-            setIsEditing(false);
+      <button
+        className={`cast-vote-button ${stats.isCompletedToday ? 'completed' : 'uncompleted'}`}
+        onClick={handleToggle}
+        aria-label={stats.isCompletedToday ? 'Remove vote' : 'Cast your identity vote'}
+      >
+        <span className="vote-button-icon">
+          {stats.isCompletedToday ? '✅' : '🗳️'}
+        </span>
+        <span className="vote-button-text">
+          {stats.isCompletedToday ? 'Vote Cast!' : 'Cast Your Vote'}
+        </span>
+      </button>
+      
+      {showEditWizard && (
+        <EditHabitWizard
+          habit={habit}
+          habits={allHabits}
+          onComplete={(updatedHabit) => {
+            onUpdate && onUpdate(habit.id, updatedHabit);
+            setShowEditWizard(false);
           }}
-        >
-          <span className="vote-button-icon">💾</span>
-          <span className="vote-button-text">Save Changes</span>
-        </button>
-      ) : (
-        <button
-          className={`cast-vote-button ${stats.isCompletedToday ? 'completed' : 'uncompleted'}`}
-          onClick={handleToggle}
-          aria-label={stats.isCompletedToday ? 'Remove vote' : 'Cast your identity vote'}
-        >
-          <span className="vote-button-icon">
-            {stats.isCompletedToday ? '✅' : '🗳️'}
-          </span>
-          <span className="vote-button-text">
-            {stats.isCompletedToday ? 'Vote Cast!' : 'Cast Your Vote'}
-          </span>
-        </button>
+          onCancel={() => setShowEditWizard(false)}
+        />
       )}
     </div>
   );
