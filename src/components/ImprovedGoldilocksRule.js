@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 
 const ImprovedGoldilocksRule = ({ habits, getHabitStats, onUpdateHabit }) => {
-  const [ratings, setRatings] = useState(() => {
-    const saved = localStorage.getItem('habitDifficultyRatings');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [ratings, setRatings] = useState({});
   
   const saveRating = (habitId, difficulty, isProgressing) => {
     const newRatings = {
@@ -16,7 +13,7 @@ const ImprovedGoldilocksRule = ({ habits, getHabitStats, onUpdateHabit }) => {
       }
     };
     setRatings(newRatings);
-    localStorage.setItem('habitDifficultyRatings', JSON.stringify(newRatings));
+
   };
   
   const analyzeHabit = (habit) => {

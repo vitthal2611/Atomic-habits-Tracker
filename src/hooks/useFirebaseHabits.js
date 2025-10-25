@@ -5,6 +5,8 @@ import { db, auth } from '../firebase';
 
 export const useFirebaseHabits = () => {
   const [habits, setHabits] = useState([]);
+  const [userSettings, setUserSettings] = useState({});
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
@@ -21,17 +23,18 @@ export const useFirebaseHabits = () => {
     return unsubscribe;
   }, []);
 
-  // Real-time habits listener
+  // Real-time data listeners
   useEffect(() => {
     if (!user) return;
 
     setLoading(true);
-    const q = query(
+    
+    // Habits listener
+    const habitsQuery = query(
       collection(db, 'habits'),
       where('userId', '==', user.uid)
     );
-
-    const unsubscribe = onSnapshot(q, 
+    const unsubscribeHabits = onSnapshot(habitsQuery, 
       (snapshot) => {
         const habitsData = snapshot.docs.map(doc => ({
           id: doc.id,
@@ -46,7 +49,41 @@ export const useFirebaseHabits = () => {
       }
     );
 
-    return unsubscribe;
+    // User settings listener
+    const settingsQuery = query(
+      collection(db, 'userSettings'),
+      where('userId', '==', user.uid)
+    );
+    const unsubscribeSettings = onSnapshot(settingsQuery, 
+      (snapshot) => {
+        const settings = {};
+        snapshot.docs.forEach(doc => {
+          settings[doc.data().key] = doc.data().value;
+        });
+        setUserSettings(settings);
+      }
+    );
+
+    // Tasks listener
+    const tasksQuery = query(
+      collection(db, 'tasks'),
+      where('userId', '==', user.uid)
+    );
+    const unsubscribeTasks = onSnapshot(tasksQuery, 
+      (snapshot) => {
+        const tasksData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setTasks(tasksData);
+      }
+    );
+
+    return () => {
+      unsubscribeHabits();
+      unsubscribeSettings();
+      unsubscribeTasks();
+    };
   }, [user]);
 
   const addHabit = useCallback(async (habitData) => {
@@ -173,6 +210,55 @@ export const useFirebaseHabits = () => {
     }
   }, [habits, getHabitStats]);
 
+  const updateUserSetting = useCallback(async (key, value) => {
+    if (!user) return;
+    try {
+      const settingId = `${user.uid}_${key}`;
+      await setDoc(doc(db, 'userSettings', settingId), {
+        userId: user.uid,
+        key,
+        value,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      setError(error.message);
+    }
+  }, [user]);
+
+  const addTask = useCallback(async (taskData) => {
+    if (!user) return;
+    try {
+      const taskId = `${user.uid}_${Date.now()}`;
+      await setDoc(doc(db, 'tasks', taskId), {
+        ...taskData,
+        userId: user.uid,
+        createdAt: new Date().toISOString()
+      });
+    } catch (error) {
+      setError(error.message);
+    }
+  }, [user]);
+
+  const updateTask = useCallback(async (id, updates) => {
+    if (!user) return;
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    try {
+      await setDoc(doc(db, 'tasks', id), { ...task, ...updates }, { merge: true });
+    } catch (error) {
+      setError(error.message);
+    }
+  }, [user, tasks]);
+
+  const deleteTask = useCallback(async (id) => {
+    if (!user) return;
+    try {
+      await deleteDoc(doc(db, 'tasks', id));
+    } catch (error) {
+      setError(error.message);
+    }
+  }, [user]);
+
   const logout = useCallback(async () => {
     try {
       await signOut(auth);
@@ -183,6 +269,8 @@ export const useFirebaseHabits = () => {
 
   return {
     habits,
+    userSettings,
+    tasks,
     loading,
     error,
     user,
@@ -192,6 +280,10 @@ export const useFirebaseHabits = () => {
     toggleHabit,
     getHabitStats,
     getOverallStats,
+    updateUserSetting,
+    addTask,
+    updateTask,
+    deleteTask,
     logout,
     clearError: () => setError(null)
   };

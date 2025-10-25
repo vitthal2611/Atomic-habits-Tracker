@@ -6,10 +6,7 @@ const OnboardingTutorial = ({ onComplete }) => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const completed = localStorage.getItem('onboardingCompleted');
-    if (!completed) {
-      setTimeout(() => setShow(true), 500);
-    }
+    setTimeout(() => setShow(true), 500);
   }, []);
 
   const steps = [
@@ -51,14 +48,14 @@ const OnboardingTutorial = ({ onComplete }) => {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
-      localStorage.setItem('onboardingCompleted', 'true');
+
       setShow(false);
       onComplete();
     }
   };
 
   const handleSkip = () => {
-    localStorage.setItem('onboardingCompleted', 'true');
+
     setShow(false);
     onComplete();
   };

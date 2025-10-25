@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 
 const WeeklyReview = ({ habits, getHabitStats }) => {
-  const [reflections, setReflections] = useState(() => {
-    const saved = localStorage.getItem('weeklyReflections');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [reflections, setReflections] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     wentWell: '',
@@ -25,7 +22,7 @@ const WeeklyReview = ({ habits, getHabitStats }) => {
     };
     const updated = [review, ...reflections].slice(0, 12);
     setReflections(updated);
-    localStorage.setItem('weeklyReflections', JSON.stringify(updated));
+
     setFormData({ wentWell: '', didntWork: '', willAdjust: '' });
     setShowForm(false);
   };

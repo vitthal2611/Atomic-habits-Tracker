@@ -4,16 +4,7 @@ const MonthlyScorecard = ({ onClose }) => {
   const [currentHabits, setCurrentHabits] = useState([]);
   const [showPrompt, setShowPrompt] = useState(false);
   
-  useEffect(() => {
-    const lastReview = localStorage.getItem('lastScorecardReview');
-    const lastDate = lastReview ? new Date(lastReview) : null;
-    const today = new Date();
-    const daysSince = lastDate ? Math.floor((today - lastDate) / (1000 * 60 * 60 * 24)) : 999;
-    
-    if (daysSince >= 30) {
-      setShowPrompt(true);
-    }
-  }, []);
+
   
   const loadCurrentHabits = () => {
     const habits = [
@@ -42,20 +33,6 @@ const MonthlyScorecard = ({ onClose }) => {
   };
   
   const handleComplete = () => {
-    localStorage.setItem('lastScorecardReview', new Date().toISOString());
-    const results = {
-      date: new Date().toISOString(),
-      good: currentHabits.filter(h => h.rating === 'good').length,
-      neutral: currentHabits.filter(h => h.rating === 'neutral').length,
-      bad: currentHabits.filter(h => h.rating === 'bad').length,
-      improved: currentHabits.filter(h => h.changed && h.rating === 'good').length,
-      eliminated: currentHabits.filter(h => h.changed && h.rating === 'bad').length
-    };
-    
-    const history = JSON.parse(localStorage.getItem('scorecardHistory') || '[]');
-    history.push(results);
-    localStorage.setItem('scorecardHistory', JSON.stringify(history));
-    
     onClose();
   };
   

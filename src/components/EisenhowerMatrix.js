@@ -1,37 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useFirebaseHabits } from '../hooks/useFirebaseHabits';
 import './EisenhowerMatrix.css';
 
 const EisenhowerMatrix = () => {
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('eisenhowerTasks');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { tasks, addTask, updateTask, deleteTask } = useFirebaseHabits();
   const [newTask, setNewTask] = useState('');
   const [selectedQuadrant, setSelectedQuadrant] = useState(1);
   const [showCompleted, setShowCompleted] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('eisenhowerTasks', JSON.stringify(tasks));
-  }, [tasks]);
 
-  const addTask = () => {
+
+  const handleAddTask = () => {
     if (newTask.trim()) {
-      setTasks([...tasks, {
-        id: Date.now(),
+      addTask({
         text: newTask,
         quadrant: selectedQuadrant,
         completed: false
-      }]);
+      });
       setNewTask('');
     }
   };
 
   const toggleTask = (id) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      updateTask(id, { completed: !task.completed });
+    }
   };
 
   const moveTask = (id, newQuadrant) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, quadrant: newQuadrant } : t));
+    updateTask(id, { quadrant: newQuadrant });
   };
 
   const handleDragStart = (e, taskId) => {
@@ -40,7 +38,7 @@ const EisenhowerMatrix = () => {
 
   const handleDrop = (e, quadrantId) => {
     e.preventDefault();
-    const taskId = Number(e.dataTransfer.getData('taskId'));
+    const taskId = e.dataTransfer.getData('taskId');
     moveTask(taskId, quadrantId);
   };
 
@@ -48,8 +46,8 @@ const EisenhowerMatrix = () => {
     e.preventDefault();
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(t => t.id !== id));
+  const handleDeleteTask = (id) => {
+    deleteTask(id);
   };
 
   const quadrants = [
@@ -80,7 +78,7 @@ const EisenhowerMatrix = () => {
           type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && addTask()}
+          onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
           placeholder="Add a new task..."
           className="task-input"
         />
@@ -93,7 +91,7 @@ const EisenhowerMatrix = () => {
             <option key={q.id} value={q.id}>{q.icon} {q.title}</option>
           ))}
         </select>
-        <button onClick={addTask} className="add-task-btn">Add Task</button>
+        <button onClick={handleAddTask} className="add-task-btn">Add Task</button>
       </div>
 
       <div className="matrix-grid">
@@ -126,7 +124,7 @@ const EisenhowerMatrix = () => {
                     onChange={() => toggleTask(task.id)}
                   />
                   <span className="task-text">{task.text}</span>
-                  <button onClick={() => deleteTask(task.id)} className="delete-task">×</button>
+                  <button onClick={() => handleDeleteTask(task.id)} className="delete-task">×</button>
                 </div>
               ))}
               {tasks.filter(t => t.quadrant === quadrant.id && !t.completed).length === 0 && (
@@ -149,8 +147,8 @@ const EisenhowerMatrix = () => {
                   onChange={() => toggleTask(task.id)}
                 />
                 <span className="task-text">{task.text}</span>
-                <span className="task-quadrant">{quadrants.find(q => q.quadrant === task.quadrant)?.icon}</span>
-                <button onClick={() => deleteTask(task.id)} className="delete-task">×</button>
+                <span className="task-quadrant">{quadrants.find(q => q.id === task.quadrant)?.icon}</span>
+                <button onClick={() => handleDeleteTask(task.id)} className="delete-task">×</button>
               </div>
             ))}
             {tasks.filter(t => t.completed).length === 0 && (

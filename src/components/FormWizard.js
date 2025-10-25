@@ -3,7 +3,7 @@ import { useFormValidation, FormField } from './FormValidation';
 import './FormWizard.css';
 
 const FormWizard = ({ onComplete, habits, loading }) => {
-  const scorecardHabits = JSON.parse(localStorage.getItem('scorecardHabits') || '[]');
+  const scorecardHabits = [];
   const [step, setStep] = useState(1);
   
   // Filter out habits that are already linked
@@ -62,9 +62,7 @@ const FormWizard = ({ onComplete, habits, loading }) => {
     if (!validateAll()) return;
     const cue = `${formData.afterHabit ? `After ${formData.afterHabit}, ` : ''}I will ${formData.name} at ${formData.time} in ${formData.location}`;
     
-    // Add new habit to scorecard list
-    const updatedScorecard = [...scorecardHabits, { id: Date.now(), name: formData.name, rating: 'good' }];
-    localStorage.setItem('scorecardHabits', JSON.stringify(updatedScorecard));
+    // Habit will be managed by Firebase
     
     onComplete({ ...formData, cue, frequency: 'daily', icon: '⭐' });
   };

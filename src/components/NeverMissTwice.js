@@ -22,13 +22,7 @@ const NeverMissTwice = ({ habits, getHabitStats, onQuickComplete }) => {
     // Show modal if there are at-risk habits and it's not too late in the day
     const hour = today.getHours();
     if (atRisk.length > 0 && hour >= 6 && hour <= 22) {
-      const lastShown = localStorage.getItem('neverMissTwiceShown');
-      const lastShownDate = lastShown ? new Date(lastShown) : null;
-      
-      if (!lastShownDate || lastShownDate.toDateString() !== today.toDateString()) {
-        setTimeout(() => setShowModal(true), 2000);
-        localStorage.setItem('neverMissTwiceShown', today.toISOString());
-      }
+      setTimeout(() => setShowModal(true), 2000);
     }
   }, [habits, getHabitStats]);
   

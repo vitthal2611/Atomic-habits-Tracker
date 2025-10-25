@@ -6,10 +6,7 @@ const TemptationBundling = ({ habits, onSaveBundle }) => {
     wantActivity: '',
     rule: ''
   });
-  const [savedBundles, setSavedBundles] = useState(() => {
-    const saved = localStorage.getItem('temptationBundles');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [savedBundles, setSavedBundles] = useState([]);
 
   const handleSave = () => {
     if (bundle.needHabit && bundle.wantActivity) {
@@ -20,7 +17,7 @@ const TemptationBundling = ({ habits, onSaveBundle }) => {
       };
       const updated = [...savedBundles, newBundle];
       setSavedBundles(updated);
-      localStorage.setItem('temptationBundles', JSON.stringify(updated));
+
       setBundle({ needHabit: '', wantActivity: '', rule: '' });
     }
   };
@@ -28,7 +25,7 @@ const TemptationBundling = ({ habits, onSaveBundle }) => {
   const handleDelete = (id) => {
     const updated = savedBundles.filter(b => b.id !== id);
     setSavedBundles(updated);
-    localStorage.setItem('temptationBundles', JSON.stringify(updated));
+
   };
 
   return (

@@ -3,7 +3,7 @@ import { useFormValidation } from './FormValidation';
 import './FormWizard.css';
 
 const EditHabitWizard = ({ habit, onComplete, onCancel, habits, loading }) => {
-  const scorecardHabits = JSON.parse(localStorage.getItem('scorecardHabits') || '[]');
+  const scorecardHabits = [];
   const [step, setStep] = useState(1);
   
   // Filter out habits that are already linked (excluding current habit)

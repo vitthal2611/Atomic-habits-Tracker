@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const OnboardingTips = ({ currentView, habitCount, daysSinceStart }) => {
   const [currentTip, setCurrentTip] = useState(null);
-  const [dismissed, setDismissed] = useState(() => {
-    const saved = localStorage.getItem('dismissedTips');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [dismissed, setDismissed] = useState([]);
 
   const tips = {
     firstHabit: {
@@ -64,14 +61,14 @@ const OnboardingTips = ({ currentView, habitCount, daysSinceStart }) => {
     if (currentTip) {
       const updated = [...dismissed, currentTip.id];
       setDismissed(updated);
-      localStorage.setItem('dismissedTips', JSON.stringify(updated));
+
       setCurrentTip(null);
     }
   };
 
   const handleResetTips = () => {
     setDismissed([]);
-    localStorage.removeItem('dismissedTips');
+
   };
 
   if (!currentTip) return null;

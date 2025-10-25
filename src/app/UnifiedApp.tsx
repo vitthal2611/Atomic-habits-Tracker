@@ -37,10 +37,7 @@ function UnifiedAppContent() {
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
-  const [contracts, setContracts] = useState(() => {
-    const saved = localStorage.getItem('habitContracts');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [contracts, setContracts] = useState([]);
   const [showAddHabit, setShowAddHabit] = useState(false);
   const [showMonthlyScorecard, setShowMonthlyScorecard] = useState(false);
   const [selectedHabitForDetails, setSelectedHabitForDetails] = useState(null);
@@ -69,8 +66,8 @@ function UnifiedAppContent() {
   }, []);
 
   useEffect(() => {
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    const scorecardCompleted = localStorage.getItem('scorecardCompleted');
+    const onboardingCompleted = false;
+    const scorecardCompleted = false;
     if (!onboardingCompleted && !scorecardCompleted && habits && habits.length === 0) {
       setShowOnboarding(true);
     }
@@ -79,15 +76,7 @@ function UnifiedAppContent() {
   // Check for monthly scorecard
   useEffect(() => {
     if (!user || !habits) return;
-    const lastReview = localStorage.getItem('lastScorecardReview');
-    if (!lastReview) {
-      localStorage.setItem('lastScorecardReview', new Date().toISOString());
-      return;
-    }
-    const daysSince = Math.floor((Date.now() - new Date(lastReview)) / (1000 * 60 * 60 * 24));
-    if (daysSince >= 30 && habits.length > 0) {
-      setShowMonthlyScorecard(true);
-    }
+    // Monthly scorecard disabled for now
   }, [habits, user]);
 
   const handleDeleteHabit = useCallback((id) => {
@@ -104,7 +93,6 @@ function UnifiedAppContent() {
   const handleSaveContract = useCallback((contract) => {
     const updated = [...contracts, contract];
     setContracts(updated);
-    localStorage.setItem('habitContracts', JSON.stringify(updated));
   }, [contracts]);
 
 
@@ -653,30 +641,25 @@ const TodayView = React.memo(function TodayView({ habits, stats, getHabitStats, 
 });
 
 function HabitScorecard({ onComplete }) {
-  const [habits, setHabits] = useState(() => {
-    const saved = localStorage.getItem('scorecardHabits');
-    return saved ? JSON.parse(saved) : [
-      { id: 1, name: 'Wake up', rating: null },
-      { id: 2, name: 'Check phone first thing', rating: null },
-      { id: 3, name: 'Drink coffee/tea', rating: null },
-      { id: 4, name: 'Eat breakfast', rating: null },
-      { id: 5, name: 'Shower', rating: null },
-      { id: 6, name: 'Scroll social media', rating: null },
-      { id: 7, name: 'Exercise', rating: null },
-      { id: 8, name: 'Read', rating: null },
-      { id: 9, name: 'Watch TV', rating: null },
-      { id: 10, name: 'Eat snacks', rating: null },
-      { id: 11, name: 'Work/Study', rating: null },
-      { id: 12, name: 'Go to bed', rating: null },
-    ];
-  });
+  const [habits, setHabits] = useState([
+    { id: 1, name: 'Wake up', rating: null },
+    { id: 2, name: 'Check phone first thing', rating: null },
+    { id: 3, name: 'Drink coffee/tea', rating: null },
+    { id: 4, name: 'Eat breakfast', rating: null },
+    { id: 5, name: 'Shower', rating: null },
+    { id: 6, name: 'Scroll social media', rating: null },
+    { id: 7, name: 'Exercise', rating: null },
+    { id: 8, name: 'Read', rating: null },
+    { id: 9, name: 'Watch TV', rating: null },
+    { id: 10, name: 'Eat snacks', rating: null },
+    { id: 11, name: 'Work/Study', rating: null },
+    { id: 12, name: 'Go to bed', rating: null },
+  ]);
   const [customHabit, setCustomHabit] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
 
-  useEffect(() => {
-    localStorage.setItem('scorecardHabits', JSON.stringify(habits));
-  }, [habits]);
+
 
   const addCustomHabit = () => {
     if (customHabit.trim()) {
