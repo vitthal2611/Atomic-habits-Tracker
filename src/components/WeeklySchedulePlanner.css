@@ -1,0 +1,314 @@
+.weekly-planner-grid {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.planner-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.planner-header h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.planner-header p {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.add-habit-btn {
+  padding: 0.75rem 1.5rem;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.add-habit-btn:hover {
+  background: #4338ca;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  border: 2px solid #4f46e5;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.add-form input {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.add-form input[type="time"] {
+  width: 120px;
+}
+
+.add-form input[type="text"] {
+  flex: 1;
+}
+
+.add-form button {
+  padding: 0.75rem 1.5rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-form button:hover {
+  background: #059669;
+}
+
+.add-form button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.day-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.day-selector > label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.day-checkboxes {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.day-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.day-checkbox:hover {
+  border-color: #4f46e5;
+  background: white;
+}
+
+.day-checkbox input:checked + span {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.day-checkbox input {
+  cursor: pointer;
+}
+
+.schedule-table {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 250px repeat(7, 1fr);
+  background: #4f46e5;
+  color: white;
+  font-weight: 600;
+}
+
+.header-cell {
+  padding: 1rem;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-cell.habit-column {
+  text-align: left;
+  border-right: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-cell:last-child {
+  border-right: none;
+}
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 250px repeat(7, 1fr);
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.2s;
+}
+
+.table-row:hover {
+  background: #f9fafb;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.habit-cell {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-right: 2px solid #e5e7eb;
+  position: relative;
+}
+
+.habit-time {
+  font-size: 0.75rem;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.habit-name {
+  font-size: 0.875rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 24px;
+  height: 24px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.habit-cell:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: #fecaca;
+}
+
+.day-cell {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #e5e7eb;
+}
+
+.day-cell:last-child {
+  border-right: none;
+}
+
+.day-cell input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  accent-color: #10b981;
+}
+
+.not-applicable {
+  color: #d1d5db;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 1200px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 200px repeat(7, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .weekly-planner-grid {
+    padding: 1rem;
+  }
+
+  .table-header,
+  .table-row {
+    grid-template-columns: 150px repeat(7, 1fr);
+  }
+
+  .header-cell,
+  .habit-cell,
+  .day-cell {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .habit-name {
+    font-size: 0.75rem;
+  }
+
+  .day-cell input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-table {
+    overflow-x: auto;
+  }
+
+  .table-header,
+  .table-row {
+    min-width: 800px;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .add-form input[type="time"] {
+    width: 100%;
+  }
+}

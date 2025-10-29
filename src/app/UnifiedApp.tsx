@@ -8,6 +8,7 @@ import EnvironmentDesign from '../components/EnvironmentDesign';
 import HabitContract from '../components/HabitContract';
 import TemptationBundling from '../components/TemptationBundling';
 import OnboardingTips from '../components/OnboardingTips';
+import WeeklySchedulePlanner from '../components/WeeklySchedulePlanner';
 import HabitStackingSuggestions from '../components/HabitStackingSuggestions';
 import ImprovedGoldilocksRule from '../components/ImprovedGoldilocksRule';
 import HabitLoopWithCraving from '../components/HabitLoopWithCraving';
@@ -363,6 +364,10 @@ function UnifiedAppContent() {
             <EisenhowerMatrix />
           </div>
           
+          <div style={{ display: view === 'planner' ? 'block' : 'none' }}>
+            <WeeklySchedulePlanner />
+          </div>
+          
           <div style={{ display: view === 'tools' ? 'block' : 'none' }}>
             {loading ? (
               <div className="tools-container">
@@ -417,6 +422,8 @@ function Header({ view, setView, habits, onLogout }) {
     const daysSince = Math.floor((Date.now() - new Date(h.startDate).getTime()) / (1000 * 60 * 60 * 24));
     return daysSince >= 10 && daysSince < 21;
   });
+  
+  const isMobile = window.innerWidth < 768;
 
   return (
     <header className="simple-header">
@@ -427,37 +434,43 @@ function Header({ view, setView, habits, onLogout }) {
           className={view === 'today' ? 'active' : ''}
           onClick={() => setView('today')}
         >
-          Today
+          {isMobile ? '📋' : 'Today'}
         </button>
         <button 
           className={view === 'scorecard' ? 'active' : ''}
           onClick={() => setView('scorecard')}
         >
-          Scorecard
+          {isMobile ? '📝' : 'Scorecard'}
         </button>
         <button 
           className={view === 'tasks' ? 'active' : ''}
           onClick={() => setView('tasks')}
         >
-          Tasks
+          {isMobile ? '✅' : 'Tasks'}
         </button>
         <button 
           className={view === 'progress' ? 'active' : ''}
           onClick={() => setView('progress')}
         >
-          Progress
+          {isMobile ? '📊' : 'Progress'}
         </button>
         <button 
           className={view === 'insights' ? 'active' : ''}
           onClick={() => setView('insights')}
         >
-          Insights {showInsightsBadge && '🔥'}
+          {isMobile ? '💡' : 'Insights'} {showInsightsBadge && '🔥'}
+        </button>
+        <button 
+          className={view === 'planner' ? 'active' : ''}
+          onClick={() => setView('planner')}
+        >
+          {isMobile ? '📅' : 'Week Planner'}
         </button>
         <button 
           className={view === 'tools' ? 'active' : ''}
           onClick={() => setView('tools')}
         >
-          Tools
+          {isMobile ? '🛠️' : 'Tools'}
         </button>
         <button 
           className="logout-btn"
